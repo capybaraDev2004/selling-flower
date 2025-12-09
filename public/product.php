@@ -218,18 +218,24 @@ include '../includes/header.php';
 
                     <!-- Price -->
                     <div class="bg-gradient-to-r from-rose-50 to-pink-50 p-6 rounded-xl mb-6">
-                        <div class="flex items-baseline gap-3 mb-2">
-                            <span class="text-4xl font-bold text-rose-500">
-                                <?php echo formatPrice($product['sale_price']); ?>
-                            </span>
-                            <span class="text-xl text-gray-400 line-through">
-                                <?php echo formatPrice($product['price']); ?>
-                            </span>
-                            <span class="bg-rose-500 text-white px-3 py-1 rounded-full text-sm font-bold">
-                                -<?php echo calculateDiscount($product['price'], $product['sale_price']); ?>%
-                            </span>
+                        <div class="product-price-container">
+                            <!-- Giá gốc - Dòng trên -->
+                            <div class="product-price-original-line mb-2">
+                                <span class="text-xl text-gray-400 line-through">
+                                    <?php echo formatPrice($product['price']); ?>
+                                </span>
+                            </div>
+                            <!-- Giá khuyến mãi - Dòng dưới -->
+                            <div class="product-price-sale-line flex items-baseline gap-3">
+                                <span class="text-3xl font-bold text-rose-500">
+                                    <?php echo formatPrice($product['sale_price']); ?>
+                                </span>
+                                <span class="bg-rose-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+                                    -<?php echo calculateDiscount($product['price'], $product['sale_price']); ?>%
+                                </span>
+                            </div>
                         </div>
-                        <p class="text-sm text-gray-600">
+                        <p class="text-sm text-gray-600 mt-3">
                             <i class="fas fa-tag mr-1"></i>
                             Tiết kiệm: <strong class="text-rose-500"><?php echo formatPrice($product['price'] - $product['sale_price']); ?></strong>
                         </p>

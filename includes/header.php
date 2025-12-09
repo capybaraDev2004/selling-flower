@@ -37,41 +37,44 @@
     <!-- Main Header -->
     <header id="main-header" class="bg-white shadow-md sticky top-0 z-50 transition-transform duration-300 ease-in-out">
         <div class="container mx-auto px-4">
-            <div class="flex items-center justify-between py-4">
-                <!-- Logo -->
-                <a href="<?php echo APP_URL; ?>" class="flex items-center gap-3">
-                    <div class="flex flex-col leading-tight bg-rose-50 px-4 py-2 rounded-2xl border border-rose-100 shadow-sm">
-                        <span class="text-2xl md:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-rose-500 to-pink-500" style="font-family: 'Baloo 2', 'Inter', sans-serif;">
+            <div class="header-content flex items-center justify-between py-2">
+                <!-- Logo - Bên trái -->
+                <div class="header-logo flex-shrink-0">
+                    <a href="<?php echo APP_URL; ?>" class="flex items-center">
+                        <img src="<?php echo IMAGES_URL; ?>/logo/logo.jpg" 
+                             alt="Hoa Ngoc Anh Logo" 
+                             class="header-logo-img object-contain hover:opacity-90 transition-opacity">
+                    </a>
+                </div>
+
+                <!-- Tiêu đề - Ở giữa -->
+                <div class="header-title flex-1 flex justify-center items-center px-4">
+                    <div class="flex flex-col leading-tight text-center">
+                        <span class="text-xl md:text-2xl lg:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-rose-500 to-pink-500" style="font-family: 'Baloo 2', 'Inter', sans-serif;">
                             HOA NGỌC ANH
                         </span>
-                        <span class="text-sm md:text-base text-rose-500 font-semibold" style="font-family: 'Inter', sans-serif;">
+                        <span class="text-xs md:text-sm lg:text-base text-rose-500 font-semibold" style="font-family: 'Inter', sans-serif;">
                             Hoa đẹp khởi nguồn cảm xúc
                         </span>
                     </div>
-                </a>
-
-                <!-- Search Bar - Desktop -->
-                <div class="hidden lg:flex flex-1 max-w-xl mx-4">
-                    <div class="relative w-full">
-                        <input type="text" 
-                               placeholder="Tìm kiếm sản phẩm..." 
-                               class="w-full px-4 py-2 pr-12 border-2 border-gray-300 rounded-full focus:outline-none focus:border-rose-500 transition">
-                        <button class="absolute right-2 top-1/2 -translate-y-1/2 bg-rose-500 text-white w-8 h-8 rounded-full hover:bg-rose-600 transition">
-                            <i class="fas fa-search"></i>
-                        </button>
-                    </div>
                 </div>
 
-                <!-- Right Menu -->
-                <div class="flex items-center gap-2">
-                    <!-- Cart -->
-                    <a href="<?php echo APP_URL; ?>/cart.php" class="relative hover:text-rose-500 transition">
-                        <i class="fas fa-shopping-cart text-2xl"></i>
-                        <span class="absolute -top-2 -right-2 bg-rose-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center" id="cart-count">0</span>
-                    </a>
+                <!-- Search Bar - Bên phải -->
+                <div class="header-search flex-shrink-0 hidden lg:flex">
+                    <form action="<?php echo APP_URL; ?>/shop.php" method="get" class="relative w-64">
+                        <input type="text" 
+                               name="q"
+                               placeholder="Tìm kiếm sản phẩm..." 
+                               class="w-full px-4 py-2 pr-12 border-2 border-gray-300 rounded-full focus:outline-none focus:border-rose-500 transition text-sm">
+                        <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 bg-rose-500 text-white w-8 h-8 rounded-full hover:bg-rose-600 transition flex items-center justify-center">
+                            <i class="fas fa-search text-sm"></i>
+                        </button>
+                    </form>
+                </div>
 
-                    <!-- Mobile Menu Toggle -->
-                    <button id="mobile-menu-toggle" class="lg:hidden text-2xl">
+                <!-- Mobile Menu Toggle - Chỉ hiện trên mobile -->
+                <div class="header-mobile-menu flex-shrink-0 lg:hidden">
+                    <button id="mobile-menu-toggle" class="text-2xl text-gray-700 hover:text-rose-500 transition">
                         <i class="fas fa-bars"></i>
                     </button>
                 </div>
@@ -84,14 +87,15 @@
 
     <!-- Mobile Search -->
     <div class="lg:hidden bg-white py-3 px-4 shadow-sm">
-        <div class="relative">
+        <form action="<?php echo APP_URL; ?>/shop.php" method="get" class="relative">
             <input type="text" 
+                   name="q"
                    placeholder="Tìm kiếm sản phẩm..." 
                    class="w-full px-4 py-2 pr-12 border-2 border-gray-300 rounded-full focus:outline-none focus:border-rose-500">
-            <button class="absolute right-2 top-1/2 -translate-y-1/2 bg-rose-500 text-white w-8 h-8 rounded-full">
+            <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 bg-rose-500 text-white w-8 h-8 rounded-full">
                 <i class="fas fa-search"></i>
             </button>
-        </div>
+        </form>
     </div>
 
     <script>

@@ -235,6 +235,14 @@ class ProductModel {
             }
         }
 
+        if (!empty($filters['keyword'])) {
+            $sql .= " AND (p.name LIKE ? OR c.name LIKE ?)";
+            $kw = '%' . $filters['keyword'] . '%';
+            $params[] = $kw;
+            $params[] = $kw;
+            $types .= "ss";
+        }
+
         if (isset($filters['price_min'])) {
             $sql .= " AND {$priceExpr} >= ?";
             $params[] = $filters['price_min'];
@@ -325,6 +333,14 @@ class ProductModel {
                 $params[] = $catId;
                 $types .= "i";
             }
+        }
+
+        if (!empty($filters['keyword'])) {
+            $sql .= " AND (p.name LIKE ? OR c.name LIKE ?)";
+            $kw = '%' . $filters['keyword'] . '%';
+            $params[] = $kw;
+            $params[] = $kw;
+            $types .= "ss";
         }
 
         if (isset($filters['price_min'])) {

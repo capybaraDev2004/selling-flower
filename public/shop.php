@@ -13,6 +13,7 @@ $sort = isset($_GET['sort']) ? $_GET['sort'] : 'default';
 $page = isset($_GET['page']) ? max(1, (int)($_GET['page'])) : 1;
 $limit = PRODUCTS_PER_PAGE;
 $offset = ($page - 1) * $limit;
+$keyword = isset($_GET['q']) ? trim($_GET['q']) : '';
 
 $productModel = new ProductModel();
 $productImageModel = new ProductImageModel();
@@ -53,6 +54,10 @@ if (!empty($selectedCategories)) {
     foreach ($selectedCategories as $catId) {
         $queryParams['cats'][] = $catId;
     }
+}
+if ($keyword !== '') {
+    $queryParams['q'] = $keyword;
+    $filters['keyword'] = $keyword;
 }
 
 // Tổng số sản phẩm và phân trang
@@ -104,13 +109,20 @@ include '../includes/header.php';
 
 <!-- Shop Content -->
 <section class="py-8">
-    <div class="container mx-auto px-4">
+        <div class="container mx-auto px-4">
         <div class="flex flex-col lg:flex-row gap-8">
+            <!-- Mobile Filter Toggle + Overlay -->
+            <button id="filter-toggle" class="mobile-filter-toggle lg:hidden">
+                <i class="fas fa-filter"></i>
+            </button>
+            <div id="filter-overlay" class="filter-overlay lg:hidden"></div>
+
             <!-- Sidebar Filter -->
-            <aside class="lg:w-1/4">
-                <form method="get" class="bg-white rounded-xl shadow-sm p-6 sticky top-24 space-y-6 max-h-[75vh] overflow-auto">
+            <aside class="lg:w-1/4 filter-panel">
+                <form method="get" class="filter-form bg-white rounded-xl shadow-sm p-6 space-y-6">
                     <input type="hidden" name="sort" value="<?php echo htmlspecialchars($sort); ?>">
                     <input type="hidden" name="page" value="1">
+                    <?php if ($keyword !== ''): ?><input type="hidden" name="q" value="<?php echo htmlspecialchars($keyword); ?>"><?php endif; ?>
                     <h3 class="text-xl font-bold mb-2 flex items-center">
                         <i class="fas fa-filter text-rose-500 mr-2"></i>
                         Bộ lọc
@@ -187,6 +199,7 @@ include '../includes/header.php';
                         trong tổng số <strong><?php echo $total_products; ?></strong> sản phẩm
                     </div>
                     <form method="get" class="flex gap-4 items-center" id="sort-form">
+                        <?php if ($keyword !== ''): ?><input type="hidden" name="q" value="<?php echo htmlspecialchars($keyword); ?>"><?php endif; ?>
                         <?php if ($selectedPriceKey): ?><input type="hidden" name="price" value="<?php echo htmlspecialchars($selectedPriceKey); ?>"><?php endif; ?>
                         <?php if ($selectedRating > 0): ?><input type="hidden" name="rating_min" value="<?php echo $selectedRating; ?>"><?php endif; ?>
                         <?php if (!empty($selectedCategories)): ?>
@@ -209,7 +222,7 @@ include '../includes/header.php';
                 </div>
 
                 <!-- Active Filters -->
-                <?php if ($selectedPriceKey || $selectedRating > 0 || !empty($selectedCategories)): ?>
+                <?php if ($selectedPriceKey || $selectedRating > 0 || !empty($selectedCategories) || $keyword !== ''): ?>
                     <div class="bg-rose-50 border border-rose-200 rounded-xl p-4 mb-6">
                         <div class="flex flex-wrap items-center gap-3">
                             <span class="text-rose-700 font-semibold flex items-center">
@@ -224,6 +237,19 @@ include '../includes/header.php';
                                     <i class="fas fa-tag"></i>
                                     <?php echo $priceRangeMap[$selectedPriceKey]['label']; ?>
                                     <a href="?<?php echo http_build_query($removePriceParams); ?>" class="text-rose-500 hover:text-rose-700 ml-1">
+                                        <i class="fas fa-times"></i>
+                                    </a>
+                                </span>
+                            <?php endif; ?>
+
+                            <?php if ($keyword !== ''): 
+                                $removeKeywordParams = $queryParams;
+                                unset($removeKeywordParams['q']);
+                            ?>
+                                <span class="inline-flex items-center gap-2 bg-white border border-rose-300 text-rose-700 px-4 py-2 rounded-full text-sm font-medium">
+                                    <i class="fas fa-search"></i>
+                                    Từ khóa: “<?php echo htmlspecialchars($keyword); ?>”
+                                    <a href="?<?php echo http_build_query($removeKeywordParams); ?>" class="text-rose-500 hover:text-rose-700 ml-1">
                                         <i class="fas fa-times"></i>
                                     </a>
                                 </span>
@@ -315,6 +341,30 @@ include '../includes/header.php';
         </div>
     </div>
 </section>
+
+<script>
+// Mobile filter toggle
+document.addEventListener('DOMContentLoaded', function() {
+    const toggleBtn = document.getElementById('filter-toggle');
+    const panel = document.querySelector('.filter-panel');
+    const overlay = document.getElementById('filter-overlay');
+    if (!toggleBtn || !panel || !overlay) return;
+
+    function setOpen(open) {
+        panel.classList.toggle('open', open);
+        overlay.classList.toggle('open', open);
+        toggleBtn.classList.toggle('open', open);
+        document.body.classList.toggle('no-scroll', open);
+    }
+
+    toggleBtn.addEventListener('click', () => {
+        const isOpen = panel.classList.contains('open');
+        setOpen(!isOpen);
+    });
+
+    overlay.addEventListener('click', () => setOpen(false));
+});
+</script>
 
 <?php include '../includes/footer.php'; ?>
 

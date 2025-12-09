@@ -253,6 +253,19 @@ showToast('<?php echo addslashes($errorMessage); ?>', 'error');
                     font-size: 14px !important;
                     vertical-align: middle !important;
                 }
+                .table tbody td:nth-child(8),
+                .table tbody td:nth-child(9) {
+                    font-size: 16px !important;
+                }
+                .table tbody td:nth-child(8) .badge {
+                    font-size: 14px !important;
+                }
+                .table tbody td:nth-child(9) .btn {
+                    font-size: 13px !important;
+                }
+                .table tbody td:nth-child(9) .btn i {
+                    font-size: 13px !important;
+                }
             </style>
             <table class="table" style="font-size: 14px; margin-bottom: 0;">
                 <thead>
@@ -261,7 +274,6 @@ showToast('<?php echo addslashes($errorMessage); ?>', 'error');
                         <th style="padding: 6px 12px; font-size: 14px;">Tên sản phẩm</th>
                         <th style="padding: 6px 12px; font-size: 14px;">SKU</th>
                         <th style="padding: 6px 12px; font-size: 14px;">Danh mục</th>
-                        <th style="padding: 6px 12px; font-size: 14px;">Thuộc tính</th>
                         <th style="padding: 6px 12px; font-size: 14px;">Giá gốc</th>
                         <th style="padding: 6px 12px; font-size: 14px;">Giá khuyến mại</th>
                         <th style="padding: 6px 12px; font-size: 14px;">Tồn kho</th>
@@ -272,34 +284,15 @@ showToast('<?php echo addslashes($errorMessage); ?>', 'error');
                 <tbody>
                     <?php if (empty($products)): ?>
                         <tr>
-                            <td colspan="10" class="text-center text-muted" style="padding: 8px 12px;">Chưa có sản phẩm nào</td>
+                            <td colspan="9" class="text-center text-muted" style="padding: 8px 12px;">Chưa có sản phẩm nào</td>
                         </tr>
                     <?php else: ?>
                         <?php foreach ($products as $item): ?>
-                            <?php 
-                            // Lấy attributes của sản phẩm này
-                            $itemAttributes = $allProductAttributes[$item['id']] ?? [];
-                            ?>
                             <tr>
                                 <td><?php echo $item['id']; ?></td>
                                 <td><?php echo htmlspecialchars($item['name']); ?></td>
                                 <td><?php echo htmlspecialchars($item['sku']); ?></td>
                                 <td><?php echo htmlspecialchars($item['category_name'] ?? '-'); ?></td>
-                                <td>
-                                    <?php if (!empty($itemAttributes)): ?>
-                                        <div style="max-width: 250px; line-height: 1.0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                            <?php 
-                                            $attrTexts = [];
-                                            foreach ($itemAttributes as $attr): 
-                                                $attrTexts[] = htmlspecialchars($attr['attribute_name']) . ': ' . htmlspecialchars($attr['attribute_value']);
-                                            endforeach; 
-                                            echo implode(', ', $attrTexts);
-                                            ?>
-                                        </div>
-                                    <?php else: ?>
-                                        <span class="text-muted">-</span>
-                                    <?php endif; ?>
-                                </td>
                                 <td><?php echo formatPrice($item['price']); ?></td>
                                 <td class="text-danger fw-bold"><?php echo $item['sale_price'] ? formatPrice($item['sale_price']) : '<span class="text-muted">-</span>'; ?></td>
                                 <td><?php echo $item['stock_quantity']; ?></td>

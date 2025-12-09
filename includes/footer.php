@@ -197,29 +197,29 @@
                     </div>
 
                     <!-- Column 3: Policies -->
-                    <div class="w-full max-w-xs mx-auto lg:max-w-none">
-                        <h4 class="font-semibold text-black mb-4 text-center">Chính sách</h4>
-                        <ul class="space-y-2 text-sm text-gray-700">
+                    <div class="w-full policies-column">
+                        <h4 class="font-semibold text-black mb-4 text-center lg:text-left">Chính sách</h4>
+                        <ul class="space-y-2 text-sm text-gray-700 policies-list" style="margin-left: 90px !important;">
                             <li>
-                                <a href="#" class="hover:text-rose-500 transition flex items-start justify-center lg:justify-start">
+                                <a href="#" class="hover:text-rose-500 transition flex items-start justify-start">
                                     <span class="mr-2">▶</span>
                                     <span>Chính Sách Trả Hàng</span>
                                 </a>
                             </li>
                             <li>
-                                <a href="#" class="hover:text-rose-500 transition flex items-start justify-center lg:justify-start">
+                                <a href="#" class="hover:text-rose-500 transition flex items-start justify-start">
                                     <span class="mr-2">▶</span>
                                     <span>Chính sách bảo mật</span>
                                 </a>
                             </li>
                             <li>
-                                <a href="#" class="hover:text-rose-500 transition flex items-start justify-center lg:justify-start">
+                                <a href="#" class="hover:text-rose-500 transition flex items-start justify-start">
                                     <span class="mr-2">▶</span>
                                     <span>Chính sách vận chuyển</span>
                                 </a>
                             </li>
                             <li>
-                                <a href="#" class="hover:text-rose-500 transition flex items-start justify-center lg:justify-start">
+                                <a href="#" class="hover:text-rose-500 transition flex items-start justify-start">
                                     <span class="mr-2">▶</span>
                                     <span>Chính sách thanh toán</span>
                                 </a>
@@ -265,22 +265,32 @@
     </footer>
 
     <!-- Floating Action Buttons -->
-    <div class="fixed right-4 bottom-4 flex flex-col gap-3 z-40">
+    <div class="floating-action-buttons fixed right-4 bottom-4 flex flex-col gap-3 z-50">
+        <!-- Cart - Đầu tiên -->
+        <a href="<?php echo APP_URL; ?>/cart.php" 
+           class="floating-btn w-14 h-14 bg-orange-500 text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform relative">
+            <i class="fas fa-shopping-cart text-2xl"></i>
+            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold" id="cart-count">0</span>
+        </a>
+        <!-- Facebook - Vị trí 2 -->
         <a href="https://www.facebook.com/" target="_blank" 
-           class="w-14 h-14 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
+           class="floating-btn w-14 h-14 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
+            <i class="fab fa-facebook text-2xl"></i>
+        </a>
+        <!-- Facebook Messenger - Vị trí 3 -->
+        <a href="https://www.facebook.com/messages/" target="_blank" 
+           class="floating-btn w-14 h-14 bg-blue-500 text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
             <i class="fab fa-facebook-messenger text-2xl"></i>
         </a>
-        <a href="https://zalo.me/" target="_blank" 
-           class="w-14 h-14 bg-blue-500 text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
-            <i class="fas fa-comment-dots text-2xl"></i>
-        </a>
+        <!-- WhatsApp - Vị trí 4 -->
         <a href="https://wa.me/" target="_blank" 
-           class="w-14 h-14 bg-green-500 text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
+           class="floating-btn w-14 h-14 bg-green-500 text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
             <i class="fab fa-whatsapp text-2xl"></i>
         </a>
-        <a href="tel:<?php echo str_replace(' ', '', CONTACT_PHONE_HN); ?>" 
-           class="w-14 h-14 bg-rose-500 text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform animate-pulse">
-            <i class="fas fa-phone-alt text-2xl"></i>
+        <!-- TikTok - Vị trí 5 -->
+        <a href="https://www.tiktok.com/" target="_blank" 
+           class="floating-btn w-14 h-14 bg-black text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
+            <i class="fab fa-tiktok text-2xl"></i>
         </a>
     </div>
 

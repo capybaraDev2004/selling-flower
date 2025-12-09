@@ -406,8 +406,10 @@ include '../includes/header.php';
 
 /* Slider Container */
 .hero-slider {
-    width: 100%;
-    margin: 0 auto;
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+    overflow: hidden;
 }
 
 .slider-container {
@@ -415,21 +417,26 @@ include '../includes/header.php';
     width: 100%;
     max-width: 100% !important;
     margin: 0 auto;
-    height: 550px;
+    height: 650px;
     position: relative;
     overflow: hidden;
 }
 
 @media (max-width: 1023px) {
     .slider-container {
-        height: 600px;
+        height: 520px;
     }
 }
 
 @media (max-width: 768px) {
     .slider-container {
-        height: 500px;
+        height: 320px;
         max-width: 100%;
+    }
+    
+    .slider-slide {
+        background-size: contain !important;
+        background-position: center !important;
     }
 }
 
