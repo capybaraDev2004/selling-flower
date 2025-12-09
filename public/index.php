@@ -430,7 +430,7 @@ include '../includes/header.php';
 
 @media (max-width: 768px) {
     .slider-container {
-        height: 320px;
+        height: 220px;
         max-width: 100%;
     }
     

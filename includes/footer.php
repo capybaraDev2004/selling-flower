@@ -121,7 +121,7 @@
         $footerPhone = $mainAddress ? $mainAddress['phone'] : (defined('CONTACT_PHONE_HN') ? CONTACT_PHONE_HN : '');
         ?>
         
-        <div class="w-full py-12 border-t footer-main-content">
+        <div class="w-full py-12 border-t footer-main-content" style="padding-bottom: 0 !important;">
             <div class="container mx-auto px-2 max-w-full">
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-3 footer-grid" style="width: 100%;">
                     <!-- Column 1: Logo and Contact -->
@@ -282,10 +282,10 @@
            class="floating-btn w-14 h-14 bg-blue-500 text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
             <i class="fab fa-facebook-messenger text-2xl"></i>
         </a>
-        <!-- WhatsApp - Vị trí 4 -->
-        <a href="https://wa.me/" target="_blank" 
+        <!-- Gọi điện thoại - Vị trí 4 -->
+        <a href="tel:0389932688" 
            class="floating-btn w-14 h-14 bg-green-500 text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
-            <i class="fab fa-whatsapp text-2xl"></i>
+            <i class="fas fa-phone-alt text-2xl"></i>
         </a>
         <!-- TikTok - Vị trí 5 -->
         <a href="https://www.tiktok.com/" target="_blank" 

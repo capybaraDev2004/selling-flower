@@ -181,7 +181,7 @@ include '../includes/header.php';
         <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-sm p-8">
             <h2 class="text-2xl font-bold mb-4"><?php echo $category_name; ?> - Đẹp và Ý Nghĩa</h2>
             <p class="text-gray-600 leading-relaxed mb-4">
-                Tại Siin Store, chúng tôi cung cấp các mẫu <?php echo strtolower($category_name); ?> đẹp nhất, 
+                Tại Hoa Ngọc Anh, chúng tôi cung cấp các mẫu <?php echo strtolower($category_name); ?> đẹp nhất, 
                 được thiết kế bởi đội ngũ florist chuyên nghiệp với nhiều năm kinh nghiệm. 
                 Mỗi sản phẩm đều được chăm chút tỉ mỉ từng chi tiết, sử dụng hoa tươi nhập khẩu chất lượng cao.
             </p>

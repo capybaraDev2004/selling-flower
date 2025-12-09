@@ -10,78 +10,81 @@ $page_description = 'Giỏ hàng của bạn';
 include '../includes/header.php';
 ?>
 
-<!-- Breadcrumb -->
-<div class="bg-gray-50 py-4">
-    <div class="container mx-auto px-4">
-        <div class="breadcrumb">
-            <a href="<?php echo APP_URL; ?>"><i class="fas fa-home"></i> Trang chủ</a>
-            <span class="separator">/</span>
-            <span class="text-gray-800 font-medium">Giỏ hàng</span>
+<main class="page-main w-full">
+    <!-- Breadcrumb -->
+    <div class="py-4" style="background: linear-gradient(90deg, #f43f5e 0%, #e11d48 100%);">
+        <div class="container mx-auto px-4">
+            <div class="breadcrumb text-white font-semibold">
+                <a href="<?php echo APP_URL; ?>" class="text-white hover:text-white">
+                    <i class="fas fa-home"></i> Trang chủ
+                </a>
+                <span class="separator px-2">/</span>
+                <span class="text-white">Giỏ hàng</span>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- Cart Content -->
-<section class="py-12">
-    <div class="container mx-auto px-4">
-        <div class="flex justify-between items-center mb-8">
-            <h1 class="text-3xl font-bold">
-                <i class="fas fa-shopping-cart text-rose-500 mr-3"></i>
-                Giỏ hàng của bạn
-            </h1>
-            <button onclick="renderCartPageFromStorage()" class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-600 transition shadow-sm">
-                <i class="fas fa-sync mr-1"></i> Reload
-            </button>
-        </div>
+    <!-- Cart Content -->
+    <section class="py-12">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center mb-8">
+                <h1 class="text-3xl font-bold">
+                    <i class="fas fa-shopping-cart text-rose-500 mr-3"></i>
+                    Giỏ hàng của bạn
+                </h1>
+            </div>
 
-        <!-- Empty Cart (sẽ được ẩn nếu có sản phẩm) -->
-        <div id="empty-cart" class="bg-white rounded-xl shadow-sm p-12 text-center hidden">
-            <i class="fas fa-shopping-cart text-gray-300 text-6xl mb-4"></i>
-            <h2 class="text-2xl font-bold text-gray-700 mb-3">Giỏ hàng trống</h2>
-            <p class="text-gray-600 mb-6">Bạn chưa có sản phẩm nào trong giỏ hàng</p>
-            <a href="<?php echo APP_URL; ?>/shop.php" 
-               class="inline-block bg-gradient-to-r from-rose-500 to-pink-500 text-white px-8 py-3 rounded-full font-semibold hover:shadow-lg transition">
-                Tiếp tục mua sắm
-            </a>
-        </div>
-        
-        <!-- Cart Content -->
-        <div id="cart-content" class="hidden">
-            <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 cart-card">
-                <!-- Cart Header -->
-                <div class="bg-gradient-to-r from-rose-50 to-pink-50 px-6 py-4 border-b border-gray-100 cart-header">
-                    <div class="grid grid-cols-12 gap-4 font-semibold text-gray-700 text-sm uppercase tracking-wide">
-                        <div class="col-span-6">Sản phẩm</div>
-                        <div class="col-span-2 text-center">Đơn giá</div>
-                        <div class="col-span-2 text-center">Số lượng</div>
-                        <div class="col-span-2 text-right">Tổng</div>
-                    </div>
-                </div>
+            <!-- Empty Cart (sẽ được ẩn nếu có sản phẩm) -->
+            <div id="empty-cart" class="bg-white rounded-xl shadow-sm p-12 text-center hidden">
+                <i class="fas fa-shopping-cart text-gray-300 text-6xl mb-4"></i>
+                <h2 class="text-2xl font-bold text-gray-700 mb-3">Giỏ hàng trống</h2>
+                <p class="text-gray-600 mb-6">Bạn chưa có sản phẩm nào trong giỏ hàng</p>
+                <a href="<?php echo APP_URL; ?>/shop.php" 
+                   class="inline-block bg-gradient-to-r from-rose-500 to-pink-500 text-white px-8 py-3 rounded-full font-semibold hover:shadow-lg transition">
+                    Tiếp tục mua sắm
+                </a>
+            </div>
+            
+            <!-- Cart Content -->
+            <div id="cart-content" class="hidden">
+                <div class="cart-list-wrapper">
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 cart-card">
+                        <!-- Cart Items -->
+                        <div id="cart-items" class="cart-grid p-4 sm:p-6">
+                            <!-- Sẽ được load từ localStorage bằng JavaScript -->
+                        </div>
 
-                <!-- Cart Items -->
-                <div id="cart-items" class="divide-y divide-gray-100">
-                    <!-- Sẽ được load từ localStorage bằng JavaScript -->
-                </div>
-
-                <!-- Cart Actions -->
-                <div class="p-6 bg-gray-50 border-t border-gray-100">
-                    <div class="flex justify-between items-center flex-wrap gap-3">
-                        <a href="<?php echo APP_URL; ?>/shop.php" 
-                           class="text-rose-500 font-semibold hover:text-rose-600 transition">
-                            <i class="fas fa-arrow-left mr-2"></i>
-                            Tiếp tục mua sắm
-                        </a>
-                        <button onclick="clearCart()" 
-                                class="text-red-500 font-semibold hover:text-red-600 transition">
-                            <i class="fas fa-trash mr-2"></i>
-                            Xóa giỏ hàng
-                        </button>
+                        <!-- Cart Actions -->
+                        <div class="p-6 bg-gray-50 border-t border-gray-100 space-y-4">
+                            <div class="flex justify-between items-center flex-wrap gap-3">
+                                <a href="<?php echo APP_URL; ?>/shop.php" 
+                                   class="text-rose-500 font-semibold hover:text-rose-600 transition">
+                                    <i class="fas fa-arrow-left mr-2"></i>
+                                    Tiếp tục mua sắm
+                                </a>
+                                <button onclick="clearCart()" 
+                                        class="text-red-500 font-semibold hover:text-red-600 transition">
+                                    <i class="fas fa-trash mr-2"></i>
+                                    Xóa giỏ hàng
+                                </button>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <a href="https://zalo.me/0389932688" target="_blank"
+                                   class="text-center bg-blue-500 text-white py-3 rounded-xl font-semibold text-base hover:shadow-lg transition-all hover:-translate-y-0.5">
+                                    <i class="fas fa-bolt mr-2"></i> Đặt nhanh qua Zalo
+                                </a>
+                                <a href="tel:0389932688"
+                                   class="text-center bg-green-500 text-white py-3 rounded-xl font-semibold text-base hover:shadow-lg transition-all hover:-translate-y-0.5">
+                                    <i class="fas fa-phone-alt mr-2"></i> Gọi đặt nhanh
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
+</main>
 
 <script>
 // Định nghĩa formatCurrency trước
@@ -179,21 +182,25 @@ function renderCartPageFromStorage() {
         if (!Array.isArray(cart) || cart.length === 0) {
             console.log('Cart is empty');
             
-            // Hiển thị empty state
+            // Ẩn block empty cũ, hiển thị cart-content với thông báo thân thiện
             if (emptyCartEl) {
-                emptyCartEl.classList.remove('hidden');
-                console.log('Showing empty cart message');
+                emptyCartEl.classList.add('hidden');
             }
             if (cartContentEl) {
-                cartContentEl.classList.add('hidden');
-                console.log('Hiding cart content');
+                cartContentEl.classList.remove('hidden');
+                cartContentEl.style.display = 'block';
             }
-            
-            // Update summary về 0
-            if (typeof updateCartSummary === 'function') {
-                updateCartSummary(0, 0);
+            if (cartItemsEl) {
+                cartItemsEl.innerHTML = `
+                    <div class="p-6 text-center text-gray-700 bg-white rounded-xl border border-gray-200 shadow-sm">
+                        <p class="font-semibold text-lg mb-2">Chưa có sản phẩm nào trong giỏ hàng</p>
+                        <p class="text-sm text-gray-500 mb-4">Tiếp tục mua sắm để thêm sản phẩm vào giỏ.</p>
+                        <a href="<?php echo APP_URL; ?>/shop.php" class="inline-block bg-gradient-to-r from-rose-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:shadow-lg transition">
+                            Tiếp tục mua sắm
+                        </a>
+                    </div>
+                `;
             }
-            
             return;
         }
         
@@ -240,34 +247,30 @@ function renderCartPageFromStorage() {
                 const productName = escapeHtml(product.name || 'Sản phẩm #' + productId);
                 const productSlug = escapeHtml(product.slug || '');
                 const productImage = escapeHtml(product.image || imagesUrl + '/products/default.jpg');
+                const rating = parseFloat(product.rating) || 0;
+                const sold = product.reviews || product.purchases || 0;
+                const hasSale = product.sale_price && product.sale_price > 0;
+                const priceHtml = hasSale
+                    ? `<div class="text-rose-500 font-bold text-lg">${formatCurrency(product.sale_price)}</div>
+                       <div class="text-sm text-gray-400 line-through">${formatCurrency(product.price || 0)}</div>`
+                    : `<div class="text-rose-500 font-bold text-lg">${formatCurrency(product.price || 0)}</div>`;
+                const stars = Array.from({length: 5}).map((_, i) => i < Math.round(rating) ? '★' : '☆').join('');
                 
                 html += `
-                    <div class="cart-item cart-item-row p-4 sm:p-5" data-product-id="${productId}">
-                        <div class="grid grid-cols-12 gap-3 sm:gap-4 items-center">
-                            <div class="col-span-12 sm:col-span-6 flex gap-3 sm:gap-4 items-start">
-                                <div class="relative shrink-0">
-                                    <a href="${appUrl}/product.php?slug=${productSlug}">
-                                        <img src="${productImage}" alt="${productName}" class="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg cursor-pointer hover:opacity-80 transition">
-                                    </a>
-                                    <button onclick="removeFromCart(${productId})" class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs hover:bg-red-600 transition z-10"><i class="fas fa-times"></i></button>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <a href="${appUrl}/product.php?slug=${productSlug}" class="font-semibold text-gray-800 hover:text-rose-500 transition block">${productName}</a>
-                                    <div class="text-sm text-gray-600 mt-1"><span class="text-green-600"><i class="fas fa-check-circle"></i> Còn hàng</span></div>
-                                </div>
+                    <div class="cart-item cart-item-row p-4 sm:p-5 bg-white rounded-xl border border-gray-200 shadow-sm" data-product-id="${productId}">
+                        <div class="flex gap-3 sm:gap-4 items-start">
+                            <div class="relative shrink-0">
+                                <a href="${appUrl}/product.php?slug=${productSlug}">
+                                    <img src="${productImage}" alt="${productName}" class="w-16 h-16 sm:w-20 object-cover rounded-lg cursor-pointer hover:opacity-80 transition">
+                                </a>
+                                <button onclick="removeFromCart(${productId})" class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs hover:bg-red-600 transition z-10"><i class="fas fa-times"></i></button>
                             </div>
-                            <div class="col-span-4 sm:col-span-2 text-center sm:text-left">
-                                <span class="font-semibold text-rose-500 cart-price block">${formatCurrency(price)}</span>
-                            </div>
-                            <div class="col-span-4 sm:col-span-2 flex justify-center">
-                                <div class="flex items-center border-2 border-gray-300 rounded-lg">
-                                    <button onclick="updateCartQuantity(${productId}, ${quantity - 1})" class="w-8 h-8 flex items-center justify-center hover:bg-gray-100 transition"><i class="fas fa-minus text-sm"></i></button>
-                                    <input type="number" value="${quantity}" min="1" class="w-12 text-center border-0 focus:outline-none font-semibold" onchange="updateCartQuantity(${productId}, this.value)">
-                                    <button onclick="updateCartQuantity(${productId}, ${quantity + 1})" class="w-8 h-8 flex items-center justify-center hover:bg-gray-100 transition"><i class="fas fa-plus text-sm"></i></button>
-                                </div>
-                            </div>
-                            <div class="col-span-4 sm:col-span-2 text-right">
-                                <span class="font-bold text-lg text-gray-800 cart-total">${formatCurrency(itemTotal)}</span>
+                            <div class="flex-1 min-w-0 space-y-1">
+                                <a href="${appUrl}/product.php?slug=${productSlug}" class="font-semibold text-gray-800 hover:text-rose-500 transition block text-lg md:text-xl leading-tight">${productName}</a>
+                                <div class="text-xs text-yellow-500 font-bold">${stars} <span class="text-gray-500 ml-1">(${rating.toFixed(1)})</span></div>
+                                <div class="text-xs text-gray-500">Đã mua: ${sold}</div>
+                                <div class="text-sm text-green-600"><i class="fas fa-check-circle mr-1"></i> Còn hàng</div>
+                                <div class="space-y-1">${priceHtml}</div>
                             </div>
                         </div>
                     </div>
@@ -300,10 +303,9 @@ function renderCartPageFromStorage() {
                             <img src="${escapeHtml(p.image || (imagesUrl + '/products/default.jpg'))}" alt="${escapeHtml(p.name || '')}" class="w-12 h-12 object-cover rounded">
                             <div>
                                 <div class="font-semibold">${escapeHtml(p.name || 'Sản phẩm #' + item.id)}</div>
-                                <div class="text-sm text-gray-500">SL: ${item.quantity}</div>
                             </div>
                         </div>
-                        <div class="font-bold text-rose-500">${formatCurrency(price * item.quantity)}</div>
+                        <div class="font-bold text-rose-500">${formatCurrency(price)}</div>
                     </div>
                 `;
             }).join('');
@@ -343,54 +345,6 @@ function renderCartPageFromStorage() {
     }
 }
 
-function updateCartSummary(subtotal, discount = 0) {
-    const shippingFee = subtotal >= 600000 ? 0 : 30000;
-    const total = subtotal + shippingFee - discount;
-    
-    let html = `
-        <div class="flex justify-between text-gray-700">
-            <span>Tạm tính:</span>
-            <span class="font-semibold">${formatCurrency(subtotal)}</span>
-        </div>
-        <div class="flex justify-between text-gray-700">
-            <span>Phí vận chuyển:</span>
-            <span class="font-semibold ${shippingFee == 0 ? 'text-green-600' : ''}">
-                ${shippingFee == 0 ? 'Miễn phí' : formatCurrency(shippingFee)}
-            </span>
-        </div>
-    `;
-    
-    if (subtotal < 600000) {
-        html += `
-            <div class="text-xs text-orange-600 bg-orange-50 p-2 rounded">
-                <i class="fas fa-info-circle mr-1"></i>
-                Mua thêm ${formatCurrency(600000 - subtotal)} để được miễn phí vận chuyển
-            </div>
-        `;
-    }
-    
-    if (discount > 0) {
-        html += `
-            <div class="flex justify-between text-green-600">
-                <span>Giảm giá:</span>
-                <span class="font-semibold">-${formatCurrency(discount)}</span>
-            </div>
-        `;
-    }
-    
-    html += `
-        <div class="border-t pt-3">
-            <div class="flex justify-between items-center">
-                <span class="text-lg font-semibold">Tổng cộng:</span>
-                <span class="text-2xl font-bold text-rose-500">
-                    ${formatCurrency(total)}
-                </span>
-            </div>
-        </div>
-    `;
-    
-    document.getElementById('cart-summary').innerHTML = html;
-}
 
 // Helper: Get cookie
 function getCookie(name) {
@@ -450,52 +404,52 @@ window.removeFromCart = function(productId) {
     console.log('Removing product from cart:', productId);
     
     try {
-        productId = parseInt(productId);
+    productId = parseInt(productId);
         if (isNaN(productId)) {
             console.error('Product ID không hợp lệ');
             if (window.showToast) showToast('Có lỗi xảy ra!', 'error');
             return false;
         }
-        
+    
         const guestId = localStorage.getItem('guest_id') || getCookie('guest_id');
-        if (!guestId) {
-            console.error('No guest ID');
+    if (!guestId) {
+        console.error('No guest ID');
             if (window.showToast) showToast('Không tìm thấy giỏ hàng!', 'error');
             return false;
+    }
+    
+    const cartKey = `cart_${guestId}`;
+    let cart = [];
+    
+    try {
+        const cartData = localStorage.getItem(cartKey);
+        if (cartData) {
+            cart = JSON.parse(cartData);
         }
-        
-        const cartKey = `cart_${guestId}`;
-        let cart = [];
-        
-        try {
-            const cartData = localStorage.getItem(cartKey);
-            if (cartData) {
-                cart = JSON.parse(cartData);
-            }
-        } catch (e) {
-            console.error('Error reading cart:', e);
+    } catch (e) {
+        console.error('Error reading cart:', e);
             if (window.showToast) showToast('Có lỗi khi đọc giỏ hàng!', 'error');
             return false;
-        }
-        
-        // Xóa sản phẩm khỏi giỏ hàng
-        cart = cart.filter(item => parseInt(item.id) !== productId);
-        
-        // Lưu lại
-        localStorage.setItem(cartKey, JSON.stringify(cart));
+    }
+    
+    // Xóa sản phẩm khỏi giỏ hàng
+    cart = cart.filter(item => parseInt(item.id) !== productId);
+    
+    // Lưu lại
+    localStorage.setItem(cartKey, JSON.stringify(cart));
         localStorage.setItem(`${cartKey}_updated`, new Date().toISOString());
-        
-        // Cập nhật số lượng trong header
-        if (window.updateCartCount) {
-            window.updateCartCount();
-        }
-        
-        // Reload giỏ hàng
+    
+    // Cập nhật số lượng trong header
+    if (window.updateCartCount) {
+        window.updateCartCount();
+    }
+    
+    // Reload giỏ hàng
         renderCartPageFromStorage();
-        
-        // Hiển thị thông báo
-        if (window.showToast) {
-            window.showToast('Đã xóa sản phẩm khỏi giỏ hàng!', 'warning');
+    
+    // Hiển thị thông báo
+    if (window.showToast) {
+        window.showToast('Đã xóa sản phẩm khỏi giỏ hàng!', 'warning');
         }
         
         return true;
@@ -511,60 +465,60 @@ window.updateCartQuantity = function(productId, quantity) {
     console.log('Updating cart quantity:', productId, quantity);
     
     try {
-        productId = parseInt(productId);
-        quantity = parseInt(quantity);
+    productId = parseInt(productId);
+    quantity = parseInt(quantity);
         
         if (isNaN(productId) || isNaN(quantity)) {
             console.error('Dữ liệu không hợp lệ');
             return false;
         }
-        
-        if (quantity < 1) {
-            window.removeFromCart(productId);
-            return;
-        }
-        
+    
+    if (quantity < 1) {
+        window.removeFromCart(productId);
+        return;
+    }
+    
         const guestId = localStorage.getItem('guest_id') || getCookie('guest_id');
-        if (!guestId) {
-            console.error('No guest ID');
+    if (!guestId) {
+        console.error('No guest ID');
             if (window.showToast) showToast('Không tìm thấy giỏ hàng!', 'error');
             return false;
+    }
+    
+    const cartKey = `cart_${guestId}`;
+    let cart = [];
+    
+    try {
+        const cartData = localStorage.getItem(cartKey);
+        if (cartData) {
+            cart = JSON.parse(cartData);
         }
-        
-        const cartKey = `cart_${guestId}`;
-        let cart = [];
-        
-        try {
-            const cartData = localStorage.getItem(cartKey);
-            if (cartData) {
-                cart = JSON.parse(cartData);
-            }
-        } catch (e) {
-            console.error('Error reading cart:', e);
+    } catch (e) {
+        console.error('Error reading cart:', e);
             if (window.showToast) showToast('Có lỗi khi đọc giỏ hàng!', 'error');
             return false;
-        }
-        
-        // Tìm và cập nhật số lượng
-        const item = cart.find(item => parseInt(item.id) === productId);
-        if (item) {
-            item.quantity = quantity;
+    }
+    
+    // Tìm và cập nhật số lượng
+    const item = cart.find(item => parseInt(item.id) === productId);
+    if (item) {
+        item.quantity = quantity;
             item.updatedAt = new Date().toISOString();
         } else {
             console.error('Không tìm thấy sản phẩm trong giỏ hàng');
             return false;
-        }
-        
-        // Lưu lại
-        localStorage.setItem(cartKey, JSON.stringify(cart));
+    }
+    
+    // Lưu lại
+    localStorage.setItem(cartKey, JSON.stringify(cart));
         localStorage.setItem(`${cartKey}_updated`, new Date().toISOString());
-        
-        // Cập nhật số lượng trong header
-        if (window.updateCartCount) {
-            window.updateCartCount();
-        }
-        
-        // Reload giỏ hàng
+    
+    // Cập nhật số lượng trong header
+    if (window.updateCartCount) {
+        window.updateCartCount();
+    }
+    
+    // Reload giỏ hàng
         renderCartPageFromStorage();
         
         return true;
@@ -585,24 +539,24 @@ window.clearCart = function() {
         }
         
         const guestId = localStorage.getItem('guest_id') || getCookie('guest_id');
-        if (!guestId) {
-            console.error('No guest ID');
+    if (!guestId) {
+        console.error('No guest ID');
             if (window.showToast) showToast('Không tìm thấy giỏ hàng!', 'error');
             return false;
-        }
-        
-        const cartKey = `cart_${guestId}`;
+    }
+    
+    const cartKey = `cart_${guestId}`;
         const productsKey = `products_${guestId}`;
-        
+    
         // Xóa giỏ hàng nhưng giữ thông tin sản phẩm để dùng lại
-        localStorage.setItem(cartKey, JSON.stringify([]));
+    localStorage.setItem(cartKey, JSON.stringify([]));
         localStorage.setItem(`${cartKey}_updated`, new Date().toISOString());
-        
-        // Cập nhật số lượng trong header
-        if (window.updateCartCount) {
-            window.updateCartCount();
-        }
-        
+    
+    // Cập nhật số lượng trong header
+    if (window.updateCartCount) {
+        window.updateCartCount();
+    }
+    
         // Reload giỏ hàng
         renderCartPageFromStorage();
         
@@ -747,4 +701,5 @@ function checkout() {
 </script>
 
 <?php include '../includes/footer.php'; ?>
+
 

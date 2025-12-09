@@ -276,12 +276,12 @@ include '../includes/header.php';
                             Thêm vào giỏ
                         </button>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-                            <a href="https://zalo.me/" target="_blank"
+                            <a href="https://zalo.me/0389932688" target="_blank"
                                class="text-center bg-blue-500 text-white py-4 rounded-xl font-bold text-lg hover:shadow-lg transition-all hover:-translate-y-1">
                                 <i class="fas fa-bolt mr-2"></i>
                                 Đặt nhanh qua Zalo
                             </a>
-                            <a href="tel:<?php echo CONTACT_PHONE_HN; ?>"
+                            <a href="tel:0389932688"
                                class="text-center bg-green-500 text-white py-4 rounded-xl font-bold text-lg hover:shadow-lg transition-all hover:-translate-y-1">
                                 <i class="fas fa-phone-alt mr-2"></i>
                                 Gọi đặt nhanh

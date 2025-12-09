@@ -3,12 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="<?php echo $page_description ?? 'Siin Store - Hoa và quà tặng ý nghĩa. Dịch vụ đặt hoa online chất lượng, giao hàng nhanh trong 90-120 phút.'; ?>">
+    <meta name="description" content="<?php echo $page_description ?? 'Hoa Ngọc Anh - Hoa và quà tặng ý nghĩa. Dịch vụ đặt hoa online chất lượng, giao hàng nhanh trong 90-120 phút.'; ?>">
     <meta name="keywords" content="hoa tươi, hoa sinh nhật, hoa khai trương, hoa tốt nghiệp, shop hoa, đặt hoa online">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='%23f43f5e' d='M50 20c-5 0-10 3-12 8-2-5-7-8-12-8-8 0-14 6-14 14 0 8 6 14 14 14 5 0 10-3 12-8 2 5 7 8 12 8 8 0 14-6 14-14 0-8-6-14-14-14zm0 20c-3 0-6-3-6-6s3-6 6-6 6 3 6 6-3 6-6 6z'/%3E%3Ccircle fill='%23ec4899' cx='50' cy='50' r='8'/%3E%3Cpath fill='%23f43f5e' d='M50 60c-8 0-15 4-18 10h36c-3-6-10-10-18-10zm0-5c5 0 9-4 9-9s-4-9-9-9-9 4-9 9 4 9 9 9z'/%3E%3C/svg%3E">
     <title><?php echo $page_title ?? APP_NAME; ?></title>
-    
-    <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="<?php echo IMAGES_URL; ?>/favicon.ico">
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
