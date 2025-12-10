@@ -49,13 +49,21 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // Helper function để format giá tiền
 function formatPrice($price) {
-    return number_format($price, 0, ',', '.') . ' ₫';
+    // Chống lỗi khi $price null/không phải số
+    if ($price === null || $price === '' || !is_numeric($price)) {
+        $price = 0;
+    }
+    $priceSafe = (float)$price;
+    return number_format($priceSafe, 0, ',', '.') . ' ₫';
 }
 
 // Helper function để tính phần trăm giảm giá
 function calculateDiscount($original_price, $sale_price) {
+    if ($original_price === null || $sale_price === null) return 0;
+    if (!is_numeric($original_price) || !is_numeric($sale_price)) return 0;
     if ($original_price <= 0) return 0;
-    return round((($original_price - $sale_price) / $original_price) * 100);
+    $discount = (($original_price - $sale_price) / $original_price) * 100;
+    return (int)round($discount);
 }
 
 // Helper function để tạo slug từ tiêu đề

@@ -379,9 +379,25 @@ class ProductModel {
     }
     
     public function getByCategorySlug($slug, $limit = 8) {
-        $sql = "SELECT p.*, c.name as category_name FROM products p LEFT JOIN categories c ON p.category_id = c.id WHERE c.slug = ? AND p.status = 'active' ORDER BY p.id ASC LIMIT ?";
+        /**
+         * Lấy sản phẩm theo slug category, bao gồm:
+         * - Sản phẩm thuộc category có slug = $slug
+         * - Sản phẩm thuộc category con của category này (parent_id = category slug)
+         */
+        $sql = "
+            SELECT p.*, c.name as category_name
+            FROM products p
+            LEFT JOIN categories c ON p.category_id = c.id
+            WHERE p.status = 'active'
+              AND (
+                    c.slug = ?
+                    OR c.parent_id = (SELECT id FROM categories WHERE slug = ? LIMIT 1)
+                  )
+            ORDER BY p.id ASC
+            LIMIT ?
+        ";
         $stmt = $this->db->prepare($sql);
-        $stmt->bind_param("si", $slug, $limit);
+        $stmt->bind_param("ssi", $slug, $slug, $limit);
         $stmt->execute();
         $result = $stmt->get_result();
         

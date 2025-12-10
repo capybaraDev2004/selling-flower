@@ -68,7 +68,7 @@ include '../includes/header.php';
                                     Xóa giỏ hàng
                                 </button>
                             </div>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <a href="https://zalo.me/0389932688" target="_blank"
                                    class="text-center bg-blue-500 text-white py-3 rounded-xl font-semibold text-base hover:shadow-lg transition-all hover:-translate-y-0.5">
                                     <i class="fas fa-bolt mr-2"></i> Đặt nhanh qua Zalo
@@ -76,6 +76,10 @@ include '../includes/header.php';
                                 <a href="tel:0389932688"
                                    class="text-center bg-green-500 text-white py-3 rounded-xl font-semibold text-base hover:shadow-lg transition-all hover:-translate-y-0.5">
                                     <i class="fas fa-phone-alt mr-2"></i> Gọi đặt nhanh
+                                </a>
+                                <a href="<?php echo APP_URL; ?>/checkout.php"
+                                   class="text-center bg-gradient-to-r from-rose-500 to-rose-600 text-white py-3 rounded-xl font-semibold text-base hover:shadow-lg transition-all hover:-translate-y-0.5">
+                                    <i class="fas fa-check-circle mr-2"></i> Đặt đơn hàng
                                 </a>
                             </div>
                     </div>
@@ -311,7 +315,7 @@ function renderCartPageFromStorage() {
                             <!-- Thông tin sản phẩm ở hàng 2 -->
                             <div class="flex flex-col p-4 sm:p-5 lg:p-6 flex-1">
                                 <!-- Tên sản phẩm -->
-                                <a href="${appUrl}/product.php?slug=${productSlug}" class="font-bold text-gray-900 hover:text-rose-500 transition-colors duration-200 block text-lg sm:text-xl lg:text-2xl leading-tight mb-3">
+                                <a href="${appUrl}/product.php?slug=${productSlug}" class="font-bold text-gray-900 hover:text-rose-500 transition-colors duration-200 block text-lg sm:text-xl lg:text-2xl leading-tight mb-3 min-h-[56px] flex items-start">
                                     ${productName}
                                 </a>
                                 
@@ -335,9 +339,30 @@ function renderCartPageFromStorage() {
                                 ` : ''}
                                 
                                 <!-- Giá - cùng một dòng -->
-                                <div class="flex items-center gap-3 mt-auto">
+                                <div class="flex items-center gap-3">
                                     <span class="text-rose-500 font-bold text-xl lg:text-2xl">${formatCurrency(displayPrice)}</span>
                                     ${hasSale && displayOriginalPrice ? `<span class="text-sm lg:text-base text-gray-400 line-through">${formatCurrency(displayOriginalPrice)}</span>` : ''}
+                                </div>
+
+                                <!-- Số lượng & thành tiền -->
+                                <div class="mt-4 pt-4 border-t border-gray-200 border-dashed flex items-center justify-center gap-6 flex-wrap text-center">
+                                    <div class="flex items-center gap-2">
+                                        <button class="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 hover:border-rose-400 hover:text-rose-500 transition"
+                                                onclick="updateCartQuantity(${productId}, ${quantity} - 1)">
+                                            <i class="fas fa-minus"></i>
+                                        </button>
+                                        <input type="number" min="1" value="${quantity}"
+                                               class="w-16 text-center rounded-lg border border-gray-200 focus:border-rose-500 focus:ring-1 focus:ring-rose-400 py-2"
+                                               onchange="updateCartQuantity(${productId}, this.value)">
+                                        <button class="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 hover:border-rose-400 hover:text-rose-500 transition"
+                                                onclick="updateCartQuantity(${productId}, ${quantity} + 1)">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="text-base font-semibold text-gray-700">Thành tiền</div>
+                                        <div class="text-2xl font-extrabold text-rose-600">${formatCurrency(itemTotal)}</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -365,15 +390,31 @@ function renderCartPageFromStorage() {
             const cartItems = cart.map(item => {
                 const p = products[item.id] || {};
                 const price = p.sale_price || p.price || 0;
+                const qty = parseInt(item.quantity) || 1;
+                const lineTotal = price * qty;
                 return `
-                    <div class="p-4 border-b flex justify-between items-center">
-                        <div class="flex items-center gap-3">
-                            <img src="${escapeHtml(p.image || (imagesUrl + '/products/default.jpg'))}" alt="${escapeHtml(p.name || '')}" class="w-12 h-12 object-cover rounded">
-                            <div>
-                                <div class="font-semibold">${escapeHtml(p.name || 'Sản phẩm #' + item.id)}</div>
+                    <div class="p-4 border-b">
+                        <div class="flex justify-between items-center gap-3">
+                            <div class="flex items-center gap-3">
+                                <img src="${escapeHtml(p.image || (imagesUrl + '/products/default.jpg'))}" alt="${escapeHtml(p.name || '')}" class="w-12 h-12 object-cover rounded">
+                                <div class="min-h-[44px] flex items-start flex-col justify-start">
+                                    <div class="font-semibold leading-snug">${escapeHtml(p.name || 'Sản phẩm #' + item.id)}</div>
+                                    <div class="text-sm text-gray-500">Giá: ${formatCurrency(price)}</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-gray-500 mb-1">Số lượng</div>
+                                <div class="flex items-center gap-2 justify-end">
+                                    <button class="w-8 h-8 flex items-center justify-center rounded border border-gray-200"
+                                            onclick="updateCartQuantity(${parseInt(item.id)}, ${qty} - 1)">-</button>
+                                    <input type="number" min="1" value="${qty}" class="w-14 text-center rounded border border-gray-200"
+                                           onchange="updateCartQuantity(${parseInt(item.id)}, this.value)">
+                                    <button class="w-8 h-8 flex items-center justify-center rounded border border-gray-200"
+                                            onclick="updateCartQuantity(${parseInt(item.id)}, ${qty} + 1)">+</button>
+                                </div>
+                                <div class="mt-2 font-bold text-rose-500">${formatCurrency(lineTotal)}</div>
                             </div>
                         </div>
-                        <div class="font-bold text-rose-500">${formatCurrency(price)}</div>
                     </div>
                 `;
             }).join('');
@@ -560,74 +601,91 @@ window.removeFromCart = function(productId) {
     }
 })();
 
-// Override updateCartQuantity để reload giỏ hàng
-window.updateCartQuantity = function(productId, quantity) {
-    console.log('Updating cart quantity:', productId, quantity);
-    
-    try {
-    productId = parseInt(productId);
-    quantity = parseInt(quantity);
-        
-        if (isNaN(productId) || isNaN(quantity)) {
-            console.error('Dữ liệu không hợp lệ');
-            return false;
-        }
-    
-    if (quantity < 1) {
-        window.removeFromCart(productId);
-        return;
+// Override updateCartQuantity để luôn reload trang sau cập nhật
+(function() {
+    function setUpdateCartQuantity() {
+        window.updateCartQuantity = function(productId, quantity) {
+            console.log('Updating cart quantity (force reload):', productId, quantity);
+            
+            try {
+                productId = parseInt(productId);
+                quantity = parseInt(quantity);
+                
+                if (isNaN(productId) || isNaN(quantity)) {
+                    console.error('Dữ liệu không hợp lệ');
+                    return false;
+                }
+            
+                if (quantity < 1) {
+                    window.removeFromCart(productId);
+                    return;
+                }
+                
+                const guestId = localStorage.getItem('guest_id') || getCookie('guest_id');
+                if (!guestId) {
+                    console.error('No guest ID');
+                    if (window.showToast) showToast('Không tìm thấy giỏ hàng!', 'error');
+                    return false;
+                }
+            
+                const cartKey = `cart_${guestId}`;
+                let cart = [];
+                
+                try {
+                    const cartData = localStorage.getItem(cartKey);
+                    if (cartData) {
+                        cart = JSON.parse(cartData);
+                    }
+                } catch (e) {
+                    console.error('Error reading cart:', e);
+                    if (window.showToast) showToast('Có lỗi khi đọc giỏ hàng!', 'error');
+                    return false;
+                }
+                
+                // Tìm và cập nhật số lượng
+                const item = cart.find(item => parseInt(item.id) === productId);
+                if (item) {
+                    item.quantity = quantity;
+                    item.updatedAt = new Date().toISOString();
+                } else {
+                    console.error('Không tìm thấy sản phẩm trong giỏ hàng');
+                    return false;
+                }
+                
+                // Lưu lại
+                localStorage.setItem(cartKey, JSON.stringify(cart));
+                localStorage.setItem(`${cartKey}_updated`, new Date().toISOString());
+                
+                // Cập nhật số lượng trong header
+                if (window.updateCartCount) {
+                    window.updateCartCount();
+                }
+                
+                // Lưu flag để hiển thị thông báo sau khi reload
+                sessionStorage.setItem('cart_qty_updated', 'true');
+                
+                // Reload giỏ hàng để đồng bộ UI
+                window.location.reload();
+                
+                return true;
+            } catch (error) {
+                console.error('Lỗi trong updateCartQuantity:', error);
+                if (window.showToast) showToast('Có lỗi xảy ra!', 'error');
+                return false;
+            }
+        };
     }
     
-        const guestId = localStorage.getItem('guest_id') || getCookie('guest_id');
-    if (!guestId) {
-        console.error('No guest ID');
-            if (window.showToast) showToast('Không tìm thấy giỏ hàng!', 'error');
-            return false;
+    // Override ngay lập tức
+    setUpdateCartQuantity();
+    // Override lại sau khi main.js load/DOM ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => setTimeout(setUpdateCartQuantity, 50));
+    } else {
+        setTimeout(setUpdateCartQuantity, 50);
     }
-    
-    const cartKey = `cart_${guestId}`;
-    let cart = [];
-    
-    try {
-        const cartData = localStorage.getItem(cartKey);
-        if (cartData) {
-            cart = JSON.parse(cartData);
-        }
-    } catch (e) {
-        console.error('Error reading cart:', e);
-            if (window.showToast) showToast('Có lỗi khi đọc giỏ hàng!', 'error');
-            return false;
-    }
-    
-    // Tìm và cập nhật số lượng
-    const item = cart.find(item => parseInt(item.id) === productId);
-    if (item) {
-        item.quantity = quantity;
-            item.updatedAt = new Date().toISOString();
-        } else {
-            console.error('Không tìm thấy sản phẩm trong giỏ hàng');
-            return false;
-    }
-    
-    // Lưu lại
-    localStorage.setItem(cartKey, JSON.stringify(cart));
-        localStorage.setItem(`${cartKey}_updated`, new Date().toISOString());
-    
-    // Cập nhật số lượng trong header
-    if (window.updateCartCount) {
-        window.updateCartCount();
-    }
-    
-    // Reload giỏ hàng
-        renderCartPageFromStorage();
-        
-        return true;
-    } catch (error) {
-        console.error('Lỗi trong updateCartQuantity:', error);
-        if (window.showToast) showToast('Có lỗi xảy ra!', 'error');
-        return false;
-    }
-};
+    window.addEventListener('load', () => setTimeout(setUpdateCartQuantity, 100));
+})();
 
 // Override clearCart để reload giỏ hàng
 window.clearCart = function() {
@@ -687,19 +745,33 @@ window.clearCart = function() {
         attempts++;
         console.log(`[Attempt ${attempts}/${maxAttempts}] Trying to init cart page...`);
         
-        // Kiểm tra xem có flag thông báo xóa thành công không
-        if (sessionStorage.getItem('cart_item_removed') === 'true') {
-            sessionStorage.removeItem('cart_item_removed');
-            // Hiển thị thông báo sau khi trang đã load
-            setTimeout(function() {
-                if (window.showToast) {
-                    window.showToast('Đã xóa sản phẩm khỏi giỏ hàng thành công!', 'success');
-                } else {
-                    // Fallback nếu không có showToast
-                    alert('Đã xóa sản phẩm khỏi giỏ hàng thành công!');
-                }
-            }, 500);
-        }
+        // Hiển thị thông báo các hành động sau reload
+        const messageFlags = [
+            { key: 'cart_item_removed', text: 'Đã xóa sản phẩm khỏi giỏ hàng thành công!', type: 'success' },
+            { key: 'cart_qty_updated', text: 'Đã cập nhật số lượng sản phẩm!', type: 'success' }
+        ];
+        messageFlags.forEach(flag => {
+            if (sessionStorage.getItem(flag.key) === 'true') {
+                sessionStorage.removeItem(flag.key);
+                setTimeout(function() {
+                    if (window.showToast) {
+                        window.showToast(flag.text, flag.type, { closable: true });
+                    } else {
+                        // Fallback với nút đóng
+                        const banner = document.createElement('div');
+                        banner.className = 'fixed top-4 right-4 z-50 bg-green-500 text-white px-4 py-3 rounded-lg shadow-lg flex items-start gap-3';
+                        banner.innerHTML = `
+                            <div class="font-semibold">${flag.text}</div>
+                            <button aria-label="Đóng" class="ml-2 text-white font-bold">✕</button>
+                        `;
+                        document.body.appendChild(banner);
+                        const closeBtn = banner.querySelector('button');
+                        closeBtn.addEventListener('click', () => banner.remove());
+                        setTimeout(() => banner.remove(), 3500);
+                    }
+                }, 500);
+            }
+        });
         
         if (cartLoaded) {
             console.log('Cart already loaded, skipping...');

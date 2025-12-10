@@ -293,7 +293,7 @@ include BASE_PATH . '/includes/admin/header.php';
         </h1>
         <p class="welcome-subtitle">Tổng quan thống kê và quản lý hệ thống</p>
     </div>
-</div>
+                    </div>
 
 <div class="dashboard-section">
     <h2 class="section-title">
@@ -314,10 +314,10 @@ include BASE_PATH . '/includes/admin/header.php';
                 </div>
                 <div class="stat-icon-wrapper">
                     <i class="fas fa-box stat-icon"></i>
-                </div>
             </div>
         </div>
-        
+    </div>
+    
         <!-- Danh mục -->
         <div class="stat-card success">
             <div class="stat-card-content">
@@ -391,7 +391,7 @@ include BASE_PATH . '/includes/admin/header.php';
                     <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">
                         <i class="fas fa-check-circle text-success"></i> Đang bán
                     </div>
-                </div>
+                    </div>
                 <div class="stat-icon-wrapper">
                     <i class="fas fa-check-circle stat-icon"></i>
                 </div>

@@ -216,29 +216,41 @@ include '../includes/header.php';
                         </div>
                     </div>
 
+                    <?php 
+                        $hasSale = isset($product['sale_price']) && $product['sale_price'] !== null && $product['sale_price'] > 0 && $product['sale_price'] < $product['price'];
+                        $activePrice = $hasSale ? $product['sale_price'] : $product['price'];
+                    ?>
                     <!-- Price -->
                     <div class="bg-gradient-to-r from-rose-50 to-pink-50 p-6 rounded-xl mb-6">
                         <div class="product-price-container">
-                            <!-- Giá gốc - Dòng trên -->
-                            <div class="product-price-original-line mb-2">
-                            <span class="text-xl text-gray-400 line-through">
-                                <?php echo formatPrice($product['price']); ?>
-                            </span>
-                            </div>
-                            <!-- Giá khuyến mãi - Dòng dưới -->
-                            <div class="product-price-sale-line flex items-baseline gap-3">
-                                <span class="text-3xl font-bold text-rose-500">
-                                    <?php echo formatPrice($product['sale_price']); ?>
-                                </span>
-                            <span class="bg-rose-500 text-white px-3 py-1 rounded-full text-sm font-bold">
-                                -<?php echo calculateDiscount($product['price'], $product['sale_price']); ?>%
-                            </span>
-                            </div>
+                            <?php if ($hasSale): ?>
+                                <!-- Giá gốc - Dòng trên -->
+                                <div class="product-price-original-line mb-2">
+                                    <span class="text-xl text-gray-400 line-through">
+                                        <?php echo formatPrice($product['price']); ?>
+                                    </span>
+                                </div>
+                                <!-- Giá khuyến mãi - Dòng dưới -->
+                                <div class="product-price-sale-line flex items-baseline gap-3">
+                                    <span class="text-3xl font-bold text-rose-500">
+                                        <?php echo formatPrice($product['sale_price']); ?>
+                                    </span>
+                                    <span class="bg-rose-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+                                        -<?php echo calculateDiscount($product['price'], $product['sale_price']); ?>%
+                                    </span>
+                                </div>
+                                <p class="text-sm text-gray-600 mt-3">
+                                    <i class="fas fa-tag mr-1"></i>
+                                    Tiết kiệm: <strong class="text-rose-500"><?php echo formatPrice($product['price'] - $product['sale_price']); ?></strong>
+                                </p>
+                            <?php else: ?>
+                                <div class="product-price-sale-line flex items-baseline gap-3">
+                                    <span class="text-3xl font-bold text-rose-500">
+                                        <?php echo formatPrice($product['price']); ?>
+                                    </span>
+                                </div>
+                            <?php endif; ?>
                         </div>
-                        <p class="text-sm text-gray-600 mt-3">
-                            <i class="fas fa-tag mr-1"></i>
-                            Tiết kiệm: <strong class="text-rose-500"><?php echo formatPrice($product['price'] - $product['sale_price']); ?></strong>
-                        </p>
                     </div>
 
                     <!-- Description -->
@@ -270,7 +282,16 @@ include '../includes/header.php';
 
                     <!-- Action Buttons -->
                     <div class="flex flex-col items-center gap-4 mb-6">
-                        <button onclick="addToCart(<?php echo $product['id']; ?>, document.getElementById('quantity').value, {name: '<?php echo addslashes($product['name']); ?>', slug: '<?php echo $product['slug']; ?>', image: '<?php echo $product['images'][0]; ?>', price: <?php echo $product['price']; ?>, sale_price: <?php echo $product['sale_price'] ? $product['sale_price'] : 'null'; ?>})" 
+                        <button onclick="addToCart(<?php echo $product['id']; ?>, document.getElementById('quantity').value, {
+                            name: '<?php echo addslashes($product['name']); ?>', 
+                            slug: '<?php echo $product['slug']; ?>', 
+                            image: '<?php echo $product['images'][0]; ?>', 
+                            price: <?php echo $product['price']; ?>, 
+                            sale_price: <?php echo $product['sale_price'] ? $product['sale_price'] : 'null'; ?>,
+                            rating: <?php echo isset($product['rating']) && $product['rating'] > 0 ? $product['rating'] : 0; ?>,
+                            reviews: <?php echo isset($product['reviews']) ? $product['reviews'] : 0; ?>,
+                            sold: <?php echo isset($product['sold']) ? $product['sold'] : 0; ?>
+                        })" 
                                 class="w-full md:w-2/3 bg-gradient-to-r from-rose-500 to-pink-500 text-white py-4 rounded-xl font-bold text-lg hover:shadow-lg transition-all hover:-translate-y-1">
                             <i class="fas fa-shopping-cart mr-2"></i>
                             Thêm vào giỏ
