@@ -276,7 +276,10 @@ include '../includes/header.php';
                                     <i class="fas fa-plus"></i>
                                 </button>
                             </div>
-                            <span class="text-gray-600"><?php echo $product['stock']; ?> sản phẩm có sẵn</span>
+                            <span class="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-green-50 text-green-700 border border-green-100 text-sm font-semibold shadow-sm">
+                                <i class="fas fa-box-open"></i>
+                                <?php echo $product['stock']; ?> sản phẩm có sẵn
+                            </span>
                         </div>
                     </div>
 

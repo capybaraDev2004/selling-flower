@@ -185,12 +185,12 @@
                                 </div>
                                 <p class="text-xs text-gray-600 mb-3">4.268 người theo dõi</p>
                                 <div class="flex gap-2">
-                                    <button class="bg-blue-600 text-white px-4 py-1 rounded text-xs hover:bg-blue-700 transition">
+                                    <a href="https://www.facebook.com/hoangocanh688?mibextid=wwXIfr&rdid=EAnLJSrhikMGHhsp&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1DU5DdKA88%2F%3Fmibextid%3DwwXIfr#" target="_blank" rel="noopener" class="bg-blue-600 text-white px-4 py-1 rounded text-xs hover:bg-blue-700 transition inline-flex items-center justify-center">
                                         Theo dõi Trang
-                                    </button>
-                                    <button class="bg-gray-200 text-gray-700 px-4 py-1 rounded text-xs hover:bg-gray-300 transition">
+                                    </a>
+                                    <a href="https://www.facebook.com/hoangocanh688?mibextid=wwXIfr&rdid=EAnLJSrhikMGHhsp&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1DU5DdKA88%2F%3Fmibextid%3DwwXIfr#" target="_blank" rel="noopener" class="bg-gray-200 text-gray-700 px-4 py-1 rounded text-xs hover:bg-gray-300 transition inline-flex items-center justify-center">
                                         Chia sẻ
-                                    </button>
+                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -273,7 +273,7 @@
             <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold" id="cart-count">0</span>
         </a>
         <!-- Facebook - Vị trí 2 -->
-        <a href="https://www.facebook.com/" target="_blank" 
+        <a href="https://www.facebook.com/hoangocanh688?mibextid=wwXIfr&rdid=EAnLJSrhikMGHhsp&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1DU5DdKA88%2F%3Fmibextid%3DwwXIfr#" target="_blank" rel="noopener"
            class="floating-btn w-14 h-14 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
             <i class="fab fa-facebook text-2xl"></i>
         </a>
@@ -282,16 +282,23 @@
            class="floating-btn w-14 h-14 bg-blue-500 text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
             <i class="fab fa-facebook-messenger text-2xl"></i>
         </a>
+        <!-- Zalo - Vị trí mới -->
+        <a href="https://zalo.me/0389932688" target="_blank" rel="noopener"
+           class="floating-btn w-14 h-14 bg-cyan-500 text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
+            <img src="https://siinstore.com/wp-content/plugins/button-contact-vr/legacy/img/zalo.png" alt="Zalo" class="w-8 h-8 object-contain">
+        </a>
         <!-- Gọi điện thoại - Vị trí 4 -->
         <a href="tel:0389932688" 
            class="floating-btn w-14 h-14 bg-green-500 text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
             <i class="fas fa-phone-alt text-2xl"></i>
         </a>
-        <!-- TikTok - Vị trí 5 -->
+        <!-- TikTok - Vị trí 5 (ẩn) -->
+        <!--
         <a href="https://www.tiktok.com/" target="_blank" 
            class="floating-btn w-14 h-14 bg-black text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
             <i class="fab fa-tiktok text-2xl"></i>
         </a>
+        -->
     </div>
 
     <!-- Bootstrap JS -->
