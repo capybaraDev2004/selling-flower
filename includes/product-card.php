@@ -50,7 +50,16 @@ $display_price = $has_sale ? $product['sale_price'] : $product['price'];
         </div>
         
         <!-- Add to Cart Button (appears on hover) -->
-        <button onclick="addToCart(<?php echo $product['id']; ?>, 1, {name: '<?php echo addslashes($product['name']); ?>', slug: '<?php echo $product['slug']; ?>', image: '<?php echo $product['image']; ?>', price: <?php echo $product['price']; ?>, sale_price: <?php echo $product['sale_price'] ? $product['sale_price'] : 'null'; ?>})" 
+        <button onclick="addToCart(<?php echo $product['id']; ?>, 1, {
+            name: '<?php echo addslashes($product['name']); ?>', 
+            slug: '<?php echo $product['slug']; ?>', 
+            image: '<?php echo $product['image']; ?>', 
+            price: <?php echo $product['price']; ?>, 
+            sale_price: <?php echo $product['sale_price'] ? $product['sale_price'] : 'null'; ?>,
+            rating: <?php echo isset($product['rating']) && $product['rating'] > 0 ? $product['rating'] : (isset($product['rating_avg']) ? $product['rating_avg'] : 0); ?>,
+            reviews: <?php echo isset($product['reviews']) ? $product['reviews'] : (isset($product['reviews_count']) ? $product['reviews_count'] : (isset($product['rating_count']) ? $product['rating_count'] : 0)); ?>,
+            sold: <?php echo isset($product['sold']) ? $product['sold'] : (isset($product['purchases']) ? $product['purchases'] : (isset($product['sold_count']) ? $product['sold_count'] : 0)); ?>
+        })" 
                 class="absolute bottom-0 left-0 right-0 bg-rose-500 text-white py-3 font-semibold translate-y-full group-hover:translate-y-0 transition-transform duration-300 hover:bg-rose-600">
             <i class="fas fa-shopping-cart mr-2"></i>Thêm vào giỏ
         </button>
@@ -118,7 +127,16 @@ $display_price = $has_sale ? $product['sale_price'] : $product['price'];
             </span>
             </div>
             <div class="product-buy-button">
-            <button onclick="addToCart(<?php echo $product['id']; ?>, 1, {name: '<?php echo addslashes($product['name']); ?>', slug: '<?php echo $product['slug']; ?>', image: '<?php echo $product['image']; ?>', price: <?php echo $product['price']; ?>, sale_price: <?php echo $product['sale_price'] ? $product['sale_price'] : 'null'; ?>})" 
+            <button onclick="addToCart(<?php echo $product['id']; ?>, 1, {
+                name: '<?php echo addslashes($product['name']); ?>', 
+                slug: '<?php echo $product['slug']; ?>', 
+                image: '<?php echo $product['image']; ?>', 
+                price: <?php echo $product['price']; ?>, 
+                sale_price: <?php echo $product['sale_price'] ? $product['sale_price'] : 'null'; ?>,
+                rating: <?php echo isset($product['rating']) && $product['rating'] > 0 ? $product['rating'] : (isset($product['rating_avg']) ? $product['rating_avg'] : 0); ?>,
+                reviews: <?php echo isset($product['reviews']) ? $product['reviews'] : (isset($product['reviews_count']) ? $product['reviews_count'] : (isset($product['rating_count']) ? $product['rating_count'] : 0)); ?>,
+                sold: <?php echo isset($product['sold']) ? $product['sold'] : (isset($product['purchases']) ? $product['purchases'] : (isset($product['sold_count']) ? $product['sold_count'] : 0)); ?>
+            })" 
                         class="product-buy-btn text-white font-medium transition-colors">
                 Mua ngay <i class="fas fa-arrow-right ml-1"></i>
             </button>

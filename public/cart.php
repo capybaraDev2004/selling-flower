@@ -11,45 +11,45 @@ include '../includes/header.php';
 ?>
 
 <main class="page-main w-full">
-    <!-- Breadcrumb -->
+<!-- Breadcrumb -->
     <div class="py-4" style="background: linear-gradient(90deg, #f43f5e 0%, #e11d48 100%);">
-        <div class="container mx-auto px-4">
+    <div class="container mx-auto px-4">
             <div class="breadcrumb text-white font-semibold">
                 <a href="<?php echo APP_URL; ?>" class="text-white hover:text-white">
                     <i class="fas fa-home"></i> Trang chủ
                 </a>
                 <span class="separator px-2">/</span>
                 <span class="text-white">Giỏ hàng</span>
-            </div>
         </div>
     </div>
+</div>
 
-    <!-- Cart Content -->
-    <section class="py-12">
-        <div class="container mx-auto px-4">
+<!-- Cart Content -->
+<section class="py-12">
+    <div class="container mx-auto px-4">
             <div class="flex justify-between items-center mb-8">
                 <h1 class="text-3xl font-bold">
-                    <i class="fas fa-shopping-cart text-rose-500 mr-3"></i>
-                    Giỏ hàng của bạn
-                </h1>
+            <i class="fas fa-shopping-cart text-rose-500 mr-3"></i>
+            Giỏ hàng của bạn
+        </h1>
             </div>
 
-            <!-- Empty Cart (sẽ được ẩn nếu có sản phẩm) -->
-            <div id="empty-cart" class="bg-white rounded-xl shadow-sm p-12 text-center hidden">
-                <i class="fas fa-shopping-cart text-gray-300 text-6xl mb-4"></i>
-                <h2 class="text-2xl font-bold text-gray-700 mb-3">Giỏ hàng trống</h2>
-                <p class="text-gray-600 mb-6">Bạn chưa có sản phẩm nào trong giỏ hàng</p>
-                <a href="<?php echo APP_URL; ?>/shop.php" 
-                   class="inline-block bg-gradient-to-r from-rose-500 to-pink-500 text-white px-8 py-3 rounded-full font-semibold hover:shadow-lg transition">
-                    Tiếp tục mua sắm
-                </a>
-            </div>
-            
-            <!-- Cart Content -->
-            <div id="cart-content" class="hidden">
+        <!-- Empty Cart (sẽ được ẩn nếu có sản phẩm) -->
+        <div id="empty-cart" class="bg-white rounded-xl shadow-sm p-12 text-center hidden">
+            <i class="fas fa-shopping-cart text-gray-300 text-6xl mb-4"></i>
+            <h2 class="text-2xl font-bold text-gray-700 mb-3">Giỏ hàng trống</h2>
+            <p class="text-gray-600 mb-6">Bạn chưa có sản phẩm nào trong giỏ hàng</p>
+            <a href="<?php echo APP_URL; ?>/shop.php" 
+               class="inline-block bg-gradient-to-r from-rose-500 to-pink-500 text-white px-8 py-3 rounded-full font-semibold hover:shadow-lg transition">
+                Tiếp tục mua sắm
+            </a>
+        </div>
+        
+        <!-- Cart Content -->
+        <div id="cart-content" class="hidden">
                 <div class="cart-list-wrapper">
                     <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 cart-card">
-                        <!-- Cart Items -->
+                <!-- Cart Items -->
                         <div id="cart-items" class="cart-grid p-4 sm:p-6">
                             <!-- Sẽ được load từ localStorage bằng JavaScript -->
                         </div>
@@ -78,12 +78,12 @@ include '../includes/header.php';
                                     <i class="fas fa-phone-alt mr-2"></i> Gọi đặt nhanh
                                 </a>
                             </div>
-                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 </main>
 
 <script>
@@ -247,30 +247,98 @@ function renderCartPageFromStorage() {
                 const productName = escapeHtml(product.name || 'Sản phẩm #' + productId);
                 const productSlug = escapeHtml(product.slug || '');
                 const productImage = escapeHtml(product.image || imagesUrl + '/products/default.jpg');
-                const rating = parseFloat(product.rating) || 0;
-                const sold = product.reviews || product.purchases || 0;
-                const hasSale = product.sale_price && product.sale_price > 0;
-                const priceHtml = hasSale
-                    ? `<div class="text-rose-500 font-bold text-lg">${formatCurrency(product.sale_price)}</div>
-                       <div class="text-sm text-gray-400 line-through">${formatCurrency(product.price || 0)}</div>`
-                    : `<div class="text-rose-500 font-bold text-lg">${formatCurrency(product.price || 0)}</div>`;
-                const stars = Array.from({length: 5}).map((_, i) => i < Math.round(rating) ? '★' : '☆').join('');
+                
+                // Lấy dữ liệu từ database - chấp nhận cả giá trị 0 nếu đó là giá trị thực
+                let rating = null;
+                if (product.rating !== undefined && product.rating !== null) {
+                    rating = parseFloat(product.rating);
+                } else if (product.rating_avg !== undefined && product.rating_avg !== null) {
+                    rating = parseFloat(product.rating_avg);
+                }
+                
+                let reviewsCount = null;
+                if (product.reviews !== undefined && product.reviews !== null) {
+                    reviewsCount = parseInt(product.reviews);
+                } else if (product.reviews_count !== undefined && product.reviews_count !== null) {
+                    reviewsCount = parseInt(product.reviews_count);
+                } else if (product.rating_count !== undefined && product.rating_count !== null) {
+                    reviewsCount = parseInt(product.rating_count);
+                }
+                
+                let sold = null;
+                if (product.sold !== undefined && product.sold !== null) {
+                    sold = parseInt(product.sold);
+                } else if (product.purchases !== undefined && product.purchases !== null) {
+                    sold = parseInt(product.purchases);
+                } else if (product.sold_count !== undefined && product.sold_count !== null) {
+                    sold = parseInt(product.sold_count);
+                }
+                
+                console.log(`Product ${productId} data:`, {
+                    rating: rating,
+                    reviewsCount: reviewsCount,
+                    sold: sold,
+                    fullProduct: product
+                });
+                
+                const originalPrice = parseFloat(product.price) || 0;
+                const salePrice = product.sale_price ? parseFloat(product.sale_price) : null;
+                const hasSale = salePrice !== null && salePrice > 0 && salePrice < originalPrice;
+                const displayPrice = hasSale ? salePrice : originalPrice;
+                const displayOriginalPrice = hasSale ? originalPrice : null;
+                
+                // Tạo stars HTML với Font Awesome - hiển thị nếu có rating (kể cả 0)
+                const hasRating = rating !== null && !isNaN(rating);
+                const starsHtml = hasRating ? Array.from({length: 5}).map((_, i) => {
+                    return i < Math.round(rating) 
+                        ? '<i class="fas fa-star text-yellow-400"></i>' 
+                        : '<i class="far fa-star text-yellow-400"></i>';
+                }).join('') : '';
                 
                 html += `
-                    <div class="cart-item cart-item-row p-4 sm:p-5 bg-white rounded-xl border border-gray-200 shadow-sm" data-product-id="${productId}">
-                        <div class="flex gap-3 sm:gap-4 items-start">
-                            <div class="relative shrink-0">
-                                <a href="${appUrl}/product.php?slug=${productSlug}">
-                                    <img src="${productImage}" alt="${productName}" class="w-16 h-16 sm:w-20 object-cover rounded-lg cursor-pointer hover:opacity-80 transition">
+                    <div class="cart-item cart-item-row bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden" data-product-id="${productId}">
+                        <div class="flex flex-col h-full">
+                            <!-- Hình ảnh ở hàng 1 -->
+                            <div class="relative w-full overflow-hidden bg-gray-50">
+                                <a href="${appUrl}/product.php?slug=${productSlug}" class="block relative group">
+                                    <img src="${productImage}" alt="${productName}" class="w-full h-48 sm:h-56 lg:h-64 xl:h-72 object-cover transition-transform duration-300 group-hover:scale-105">
+                                    <div class="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
                                 </a>
-                                <button onclick="removeFromCart(${productId})" class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs hover:bg-red-600 transition z-10"><i class="fas fa-times"></i></button>
+                                <button onclick="removeFromCart(${productId})" class="absolute top-3 right-3 w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full text-sm transition-all duration-200 z-10 flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-110">
+                                    <i class="fas fa-times"></i>
+                                </button>
                             </div>
-                            <div class="flex-1 min-w-0 space-y-1">
-                                <a href="${appUrl}/product.php?slug=${productSlug}" class="font-semibold text-gray-800 hover:text-rose-500 transition block text-lg md:text-xl leading-tight">${productName}</a>
-                                <div class="text-xs text-yellow-500 font-bold">${stars} <span class="text-gray-500 ml-1">(${rating.toFixed(1)})</span></div>
-                                <div class="text-xs text-gray-500">Đã mua: ${sold}</div>
-                                <div class="text-sm text-green-600"><i class="fas fa-check-circle mr-1"></i> Còn hàng</div>
-                                <div class="space-y-1">${priceHtml}</div>
+                            <!-- Thông tin sản phẩm ở hàng 2 -->
+                            <div class="flex flex-col p-4 sm:p-5 lg:p-6 flex-1">
+                                <!-- Tên sản phẩm -->
+                                <a href="${appUrl}/product.php?slug=${productSlug}" class="font-bold text-gray-900 hover:text-rose-500 transition-colors duration-200 block text-lg sm:text-xl lg:text-2xl leading-tight mb-3">
+                                    ${productName}
+                                </a>
+                                
+                                ${hasRating ? `
+                                <!-- Rating và Reviews - hiển thị nếu có dữ liệu (kể cả 0) -->
+                                <div class="flex items-center gap-2 mb-2">
+                                    <div class="flex items-center gap-1 text-yellow-400 text-sm lg:text-base">
+                                        ${starsHtml}
+                                    </div>
+                                    <span class="text-sm lg:text-base text-gray-900 font-medium">${rating.toFixed(1)}</span>
+                                    ${reviewsCount !== null && !isNaN(reviewsCount) ? `<span class="text-sm lg:text-base text-gray-500">(${reviewsCount} đánh giá)</span>` : ''}
+                                </div>
+                                ` : ''}
+                                
+                                ${sold !== null && !isNaN(sold) ? `
+                                <!-- Đã bán - hiển thị nếu có dữ liệu (kể cả 0) -->
+                                <div class="flex items-center gap-2 mb-3">
+                                    <i class="fas fa-check-circle text-green-600"></i>
+                                    <span class="text-sm lg:text-base text-gray-900">Đã bán ${sold}</span>
+                                </div>
+                                ` : ''}
+                                
+                                <!-- Giá - cùng một dòng -->
+                                <div class="flex items-center gap-3 mt-auto">
+                                    <span class="text-rose-500 font-bold text-xl lg:text-2xl">${formatCurrency(displayPrice)}</span>
+                                    ${hasSale && displayOriginalPrice ? `<span class="text-sm lg:text-base text-gray-400 line-through">${formatCurrency(displayOriginalPrice)}</span>` : ''}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -399,23 +467,25 @@ window.debugCart = function() {
     console.log('=== END DEBUG ===');
 };
 
-// Override removeFromCart để reload giỏ hàng
+// Override removeFromCart để reload giỏ hàng - Đảm bảo override sau khi main.js load
+(function() {
+    function overrideRemoveFromCart() {
 window.removeFromCart = function(productId) {
-    console.log('Removing product from cart:', productId);
-    
-    try {
+            console.log('[Cart Page] Removing product from cart:', productId);
+            
+            try {
     productId = parseInt(productId);
-        if (isNaN(productId)) {
-            console.error('Product ID không hợp lệ');
-            if (window.showToast) showToast('Có lỗi xảy ra!', 'error');
-            return false;
-        }
+                if (isNaN(productId)) {
+                    console.error('Product ID không hợp lệ');
+                    if (window.showToast) window.showToast('Có lỗi xảy ra!', 'error');
+                    return false;
+                }
     
-        const guestId = localStorage.getItem('guest_id') || getCookie('guest_id');
+                const guestId = localStorage.getItem('guest_id') || getCookie('guest_id');
     if (!guestId) {
         console.error('No guest ID');
-            if (window.showToast) showToast('Không tìm thấy giỏ hàng!', 'error');
-            return false;
+                    if (window.showToast) window.showToast('Không tìm thấy giỏ hàng!', 'error');
+                    return false;
     }
     
     const cartKey = `cart_${guestId}`;
@@ -428,37 +498,67 @@ window.removeFromCart = function(productId) {
         }
     } catch (e) {
         console.error('Error reading cart:', e);
-            if (window.showToast) showToast('Có lỗi khi đọc giỏ hàng!', 'error');
-            return false;
+                    if (window.showToast) window.showToast('Có lỗi khi đọc giỏ hàng!', 'error');
+                    return false;
     }
     
     // Xóa sản phẩm khỏi giỏ hàng
+                const initialLength = cart.length;
     cart = cart.filter(item => parseInt(item.id) !== productId);
+            
+                if (cart.length === initialLength) {
+                    console.warn('Product not found in cart:', productId);
+                    if (window.showToast) window.showToast('Không tìm thấy sản phẩm trong giỏ hàng!', 'error');
+                    return false;
+                }
     
     // Lưu lại
     localStorage.setItem(cartKey, JSON.stringify(cart));
-        localStorage.setItem(`${cartKey}_updated`, new Date().toISOString());
+                localStorage.setItem(`${cartKey}_updated`, new Date().toISOString());
+            
+                console.log('[Cart Page] Cart updated, new length:', cart.length);
     
     // Cập nhật số lượng trong header
     if (window.updateCartCount) {
         window.updateCartCount();
     }
     
-    // Reload giỏ hàng
-        renderCartPageFromStorage();
+                // Lưu flag vào sessionStorage để hiển thị thông báo sau khi reload
+                sessionStorage.setItem('cart_item_removed', 'true');
     
-    // Hiển thị thông báo
-    if (window.showToast) {
-        window.showToast('Đã xóa sản phẩm khỏi giỏ hàng!', 'warning');
-        }
-        
-        return true;
-    } catch (error) {
-        console.error('Lỗi trong removeFromCart:', error);
-        if (window.showToast) showToast('Có lỗi xảy ra!', 'error');
-        return false;
+                // Reload trang ngay lập tức
+                console.log('[Cart Page] Reloading page after removal...');
+                window.location.reload();
+                
+                return true;
+            } catch (error) {
+                console.error('Lỗi trong removeFromCart:', error);
+                if (window.showToast) window.showToast('Có lỗi xảy ra!', 'error');
+                return false;
+            }
+        };
+        console.log('[Cart Page] removeFromCart function overridden successfully');
     }
-};
+    
+    // Override ngay lập tức
+    overrideRemoveFromCart();
+    
+    // Override lại sau khi window load để đảm bảo override được hàm từ main.js
+    if (window.addEventListener) {
+        window.addEventListener('load', function() {
+            setTimeout(overrideRemoveFromCart, 100);
+        });
+    }
+    
+    // Override lại sau khi DOM ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(overrideRemoveFromCart, 200);
+        });
+    } else {
+        setTimeout(overrideRemoveFromCart, 100);
+    }
+})();
 
 // Override updateCartQuantity để reload giỏ hàng
 window.updateCartQuantity = function(productId, quantity) {
@@ -586,6 +686,20 @@ window.clearCart = function() {
     function initCartPage() {
         attempts++;
         console.log(`[Attempt ${attempts}/${maxAttempts}] Trying to init cart page...`);
+        
+        // Kiểm tra xem có flag thông báo xóa thành công không
+        if (sessionStorage.getItem('cart_item_removed') === 'true') {
+            sessionStorage.removeItem('cart_item_removed');
+            // Hiển thị thông báo sau khi trang đã load
+            setTimeout(function() {
+                if (window.showToast) {
+                    window.showToast('Đã xóa sản phẩm khỏi giỏ hàng thành công!', 'success');
+                } else {
+                    // Fallback nếu không có showToast
+                    alert('Đã xóa sản phẩm khỏi giỏ hàng thành công!');
+                }
+            }, 500);
+        }
         
         if (cartLoaded) {
             console.log('Cart already loaded, skipping...');

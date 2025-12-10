@@ -156,15 +156,51 @@ function addToCart(productId, quantity = 1, productData = null) {
                 products = {};
         }
         
+        // Lấy rating - ưu tiên rating, sau đó rating_avg
+        let rating = null;
+        if (productData.rating !== undefined && productData.rating !== null) {
+            rating = parseFloat(productData.rating);
+        } else if (productData.rating_avg !== undefined && productData.rating_avg !== null) {
+            rating = parseFloat(productData.rating_avg);
+        }
+        if (isNaN(rating)) rating = null;
+        
+        // Lấy reviews - ưu tiên reviews, sau đó reviews_count, cuối cùng rating_count
+        let reviews = null;
+        if (productData.reviews !== undefined && productData.reviews !== null) {
+            reviews = parseInt(productData.reviews);
+        } else if (productData.reviews_count !== undefined && productData.reviews_count !== null) {
+            reviews = parseInt(productData.reviews_count);
+        } else if (productData.rating_count !== undefined && productData.rating_count !== null) {
+            reviews = parseInt(productData.rating_count);
+        }
+        if (isNaN(reviews)) reviews = null;
+        
+        // Lấy sold - ưu tiên sold, sau đó purchases, cuối cùng sold_count
+        let sold = null;
+        if (productData.sold !== undefined && productData.sold !== null) {
+            sold = parseInt(productData.sold);
+        } else if (productData.purchases !== undefined && productData.purchases !== null) {
+            sold = parseInt(productData.purchases);
+        } else if (productData.sold_count !== undefined && productData.sold_count !== null) {
+            sold = parseInt(productData.sold_count);
+        }
+        if (isNaN(sold)) sold = null;
+        
         products[productId] = {
             id: productId,
             name: productData.name || '',
             slug: productData.slug || '',
             image: productData.image || '',
             price: parseFloat(productData.price) || 0,
-                sale_price: productData.sale_price ? parseFloat(productData.sale_price) : null,
-                updatedAt: new Date().toISOString()
+            sale_price: productData.sale_price ? parseFloat(productData.sale_price) : null,
+            rating: rating,
+            reviews: reviews,
+            sold: sold,
+            updatedAt: new Date().toISOString()
         };
+        
+        console.log('Saving product to localStorage:', products[productId]);
         
         localStorage.setItem(productsKey, JSON.stringify(products));
     }

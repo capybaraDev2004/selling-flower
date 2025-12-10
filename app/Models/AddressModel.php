@@ -40,40 +40,48 @@ class AddressModel {
     }
     
     public function create($data) {
-        $stmt = $this->db->prepare("INSERT INTO addresses (name, address, ward, district, city, phone, email, map_url, latitude, longitude, type, display_order, status, note) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL, ?, ?, ?, ?)");
-        $stmt->bind_param("ssssssssssis",
-            $data['name'],
-            $data['address'],
-            $data['ward'],
-            $data['district'],
-            $data['city'],
-            $data['phone'],
-            $data['email'],
-            $data['map_url'],
-            $data['type'],
-            $data['display_order'],
-            $data['status'],
-            $data['note']
+        // Kiểm tra và lấy main từ data, mặc định là 0 nếu không có
+        $main = isset($data['main']) ? intval($data['main']) : 0;
+        
+        $stmt = $this->db->prepare("INSERT INTO addresses (name, address, main, ward, district, city, phone, email, map_url, latitude, longitude, type, display_order, status, note) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL, ?, ?, ?, ?)");
+        $stmt->bind_param("ssisssssssiss",
+            $data['name'],           // s
+            $data['address'],        // s
+            $main,                   // i (main)
+            $data['ward'],           // s
+            $data['district'],       // s
+            $data['city'],           // s
+            $data['phone'],          // s
+            $data['email'],          // s
+            $data['map_url'],        // s
+            $data['type'],           // s
+            $data['display_order'],   // i
+            $data['status'],         // s
+            $data['note']            // s
         );
         return $stmt->execute();
     }
     
     public function update($id, $data) {
-        $stmt = $this->db->prepare("UPDATE addresses SET name = ?, address = ?, ward = ?, district = ?, city = ?, phone = ?, email = ?, map_url = ?, latitude = NULL, longitude = NULL, type = ?, display_order = ?, status = ?, note = ? WHERE id = ?");
-        $stmt->bind_param("ssssssssissisi",
-            $data['name'],
-            $data['address'],
-            $data['ward'],
-            $data['district'],
-            $data['city'],
-            $data['phone'],
-            $data['email'],
-            $data['map_url'],
-            $data['type'],
-            $data['display_order'],
-            $data['status'],
-            $data['note'],
-            $id
+        // Kiểm tra và lấy main từ data, mặc định là 0 nếu không có
+        $main = isset($data['main']) ? intval($data['main']) : 0;
+        
+        $stmt = $this->db->prepare("UPDATE addresses SET name = ?, address = ?, main = ?, ward = ?, district = ?, city = ?, phone = ?, email = ?, map_url = ?, latitude = NULL, longitude = NULL, type = ?, display_order = ?, status = ?, note = ? WHERE id = ?");
+        $stmt->bind_param("ssisssssssissi",
+            $data['name'],           // s
+            $data['address'],        // s
+            $main,                   // i (main)
+            $data['ward'],           // s
+            $data['district'],       // s
+            $data['city'],           // s
+            $data['phone'],          // s
+            $data['email'],          // s
+            $data['map_url'],        // s
+            $data['type'],           // s
+            $data['display_order'],  // i
+            $data['status'],        // s
+            $data['note'],          // s
+            $id                      // i
         );
         return $stmt->execute();
     }

@@ -5,7 +5,7 @@
  */
 
 // Cấu hình chung
-define('APP_NAME', 'Siin Store - Hoa và Quà tặng ý nghĩa');
+define('APP_NAME', 'Hoa Ngọc Anh - Hoa và Quà tặng ý nghĩa');
 define('APP_URL', 'http://localhost/hoaNgocAnh/public');
 define('BASE_PATH', dirname(__DIR__));
 
@@ -28,7 +28,7 @@ define('DB_CHARSET', 'utf8mb4');
 // Thông tin liên hệ
 define('CONTACT_PHONE_HN', '+84 392 690 630');
 define('CONTACT_PHONE_HCM', '0966 312 360');
-define('CONTACT_EMAIL', 'contact@siinstore.com');
+define('CONTACT_EMAIL', 'contact@hoangocanh.com');
 define('CONTACT_ADDRESS_HN', '177 Trung Kính, phường Yên Hoà, quận Cầu Giấy, TP Hà Nội');
 define('CONTACT_ADDRESS_HCM', '151 Nguyễn Duy Trinh, TP Thủ Đức, thành phố Hồ Chí Minh');
 

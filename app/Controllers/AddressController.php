@@ -22,6 +22,7 @@ class AddressController {
         $data = [
             'name' => trim($_POST['name'] ?? ''),
             'address' => trim($_POST['address'] ?? ''),
+            'main' => isset($_POST['main']) ? intval($_POST['main']) : 0,
             'ward' => trim($_POST['ward'] ?? ''),
             'district' => trim($_POST['district'] ?? ''),
             'city' => trim($_POST['city'] ?? ''),
@@ -49,6 +50,7 @@ class AddressController {
         $data = [
             'name' => trim($_POST['name'] ?? ''),
             'address' => trim($_POST['address'] ?? ''),
+            'main' => isset($_POST['main']) ? intval($_POST['main']) : 0,
             'ward' => trim($_POST['ward'] ?? ''),
             'district' => trim($_POST['district'] ?? ''),
             'city' => trim($_POST['city'] ?? ''),

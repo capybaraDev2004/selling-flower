@@ -33,7 +33,7 @@
 </head>
 <body class="font-inter">
     <!-- Main Header -->
-    <header id="main-header" class="bg-white shadow-md sticky top-0 z-50 transition-transform duration-300 ease-in-out">
+    <header id="main-header" class="bg-white shadow-md fixed top-0 left-0 right-0 z-50">
         <div class="container mx-auto px-4">
             <div class="header-content flex items-center justify-between py-2">
                 <!-- Logo - Bên trái -->
@@ -98,50 +98,112 @@
 
     <script>
         (function() {
-            const header = document.getElementById('main-header');
-            let lastScroll = window.pageYOffset || document.documentElement.scrollTop;
-            let upAccum = 0;
-            let downAccum = 0;
-            let hidden = false;
-            const hideThreshold = 100;      // chỉ bắt đầu ẩn sau khi vượt 100px
-            const upShowThreshold = 400;     // phải cuộn lên ít nhất 80px mới hiện lại
-            const downHideThreshold = 100;   // cuộn xuống thêm 20px thì ẩn
-
-            function apply(show) {
-                header.style.transform = show ? 'translateY(0)' : 'translateY(-100%)';
-                hidden = !show;
-            }
-
-            function onScroll() {
-                const current = window.pageYOffset || document.documentElement.scrollTop;
-                const delta = current - lastScroll;
-
-                // Khi gần đầu trang: luôn hiện và reset tích lũy
-                if (current < hideThreshold) {
-                    apply(true);
-                    upAccum = 0;
-                    downAccum = 0;
-                    lastScroll = current;
-                    return;
+            'use strict';
+            
+            let header = null;
+            let lastScrollTop = 0;
+            let isScrolling = false;
+            let scrollTimer = null;
+            
+            function initHeaderScroll() {
+                header = document.getElementById('main-header');
+                if (!header) {
+                    console.error('[Header Scroll] Header element not found!');
+                    return false;
                 }
-
-                if (delta > 0) { // cuộn xuống
-                    downAccum += delta;
-                    upAccum = 0;
-                    if (!hidden && downAccum > downHideThreshold) {
-                        apply(false);
-                    }
-                } else if (delta < 0) { // cuộn lên
-                    upAccum += -delta;
-                    downAccum = 0;
-                    if (hidden && upAccum > upShowThreshold) {
-                        apply(true);
+                
+                console.log('[Header Scroll] Header found:', header);
+                
+                // Tính toán và set padding-top cho body
+                function updateBodyPadding() {
+                    if (header) {
+                        const headerHeight = header.offsetHeight;
+                        document.body.style.paddingTop = headerHeight + 'px';
+                        console.log('[Header Scroll] Body padding set to:', headerHeight + 'px');
                     }
                 }
-
-                lastScroll = current < 0 ? 0 : current;
+                
+                updateBodyPadding();
+                document.body.classList.add('has-fixed-header');
+                
+                // Đảm bảo header không có class hidden ban đầu
+                header.classList.remove('header-hidden');
+                
+                // Lấy scroll position ban đầu
+                lastScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                console.log('[Header Scroll] Initial scroll position:', lastScrollTop);
+                
+                function showHeader() {
+                    if (header && header.classList.contains('header-hidden')) {
+                        header.classList.remove('header-hidden');
+                        console.log('[Header Scroll] Header SHOWN');
+                    }
+                }
+                
+                function hideHeader() {
+                    if (header && !header.classList.contains('header-hidden')) {
+                        header.classList.add('header-hidden');
+                        console.log('[Header Scroll] Header HIDDEN');
+                    }
+                }
+                
+                function handleScroll() {
+                    const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                    const scrollDelta = currentScrollTop - lastScrollTop;
+                    
+                    // Ở đầu trang (top): luôn hiện header
+                    if (currentScrollTop <= 10) {
+                        showHeader();
+                        lastScrollTop = currentScrollTop;
+                        return;
+                    }
+                    
+                    // Cuộn xuống (scrollDelta > 0): ẩn header
+                    if (scrollDelta > 10) {
+                        hideHeader();
+                    }
+                    // Cuộn lên (scrollDelta < 0): hiện header
+                    else if (scrollDelta < -10) {
+                        showHeader();
+                    }
+                    
+                    lastScrollTop = currentScrollTop;
+                }
+                
+                // Thêm event listener với debounce
+                window.addEventListener('scroll', function() {
+                    if (!isScrolling) {
+                        window.requestAnimationFrame(function() {
+                            handleScroll();
+                            isScrolling = false;
+                        });
+                        isScrolling = true;
+                    }
+                }, { passive: true });
+                
+                // Xử lý resize
+                let resizeTimer;
+                window.addEventListener('resize', function() {
+                    clearTimeout(resizeTimer);
+                    resizeTimer = setTimeout(function() {
+                        updateBodyPadding();
+                    }, 100);
+                });
+                
+                // Test ngay
+                handleScroll();
+                
+                console.log('[Header Scroll] Initialized successfully');
+                return true;
             }
-
-            window.addEventListener('scroll', onScroll, { passive: true });
+            
+            // Chạy khi DOM ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', function() {
+                    setTimeout(initHeaderScroll, 100);
+                });
+            } else {
+                setTimeout(initHeaderScroll, 100);
+            }
         })();
     </script>

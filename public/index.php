@@ -410,27 +410,42 @@ include '../includes/header.php';
     margin-left: calc(50% - 50vw);
     margin-right: calc(50% - 50vw);
     overflow: hidden;
+    height: 650px;
+    min-height: 650px;
+    position: relative;
 }
 
 .slider-container {
-    margin-top: 20px !important;
     width: 100%;
     max-width: 100% !important;
     margin: 0 auto;
-    height: 650px;
+    height: 100%;
+    min-height: 100%;
     position: relative;
     overflow: hidden;
 }
 
 @media (max-width: 1023px) {
-    .slider-container {
+    .hero-slider {
         height: 520px;
+        min-height: 520px;
+    }
+    
+    .slider-container {
+        height: 100%;
+        min-height: 100%;
     }
 }
 
 @media (max-width: 768px) {
-    .slider-container {
+    .hero-slider {
         height: 220px;
+        min-height: 220px;
+    }
+    
+    .slider-container {
+        height: 100%;
+        min-height: 100%;
         max-width: 100%;
     }
     

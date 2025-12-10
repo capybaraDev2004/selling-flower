@@ -165,12 +165,7 @@ include '../includes/header.php';
 
         <!-- Load More (placeholder, chưa triển khai) -->
         <?php if (!empty($products)): ?>
-        <div class="text-center mt-10">
-            <button class="inline-flex items-center gap-2 border-2 border-rose-500 text-rose-500 px-8 py-3 rounded-full font-semibold hover:bg-rose-500 hover:text-white transition" disabled>
-                Xem thêm
-                <i class="fas fa-chevron-down"></i>
-            </button>
-        </div>
+        
         <?php endif; ?>
     </div>
 </section>
