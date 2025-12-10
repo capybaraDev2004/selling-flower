@@ -27,7 +27,7 @@ include '../includes/header.php';
 
     <section class="py-10">
         <div class="container mx-auto px-4">
-            <div class="flex justify-between items-center mb-6">
+            <div class="flex justify-between items-center mb-6" id="checkout-header">
                 <div>
                     <p class="text-sm text-gray-500 mb-1 uppercase tracking-wide">Bước 2</p>
                     <h1 class="text-3xl font-bold text-gray-900">Xác nhận đơn hàng</h1>
@@ -39,7 +39,7 @@ include '../includes/header.php';
             </div>
 
             <!-- Thông tin nhận hàng -->
-            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-8">
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-8" id="checkout-form-section">
                 <div class="flex items-center gap-3 mb-4">
                     <div class="w-10 h-10 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center font-bold">1</div>
                     <div>
@@ -55,7 +55,7 @@ include '../includes/header.php';
                         <p class="text-sm text-red-500 mt-2 hidden" id="error-fullname"></p>
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold text-gray-800 mb-2">Số điện thoại *</label>
+                        <label class="block text-sm font-semibold text-gray-800 mb-2">Số điện thoại *(Ưu tiên số điện thoại có dùng zalo)</label>
                         <input type="tel" id="phone" class="w-full rounded-xl border border-gray-200 px-4 py-3 focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition bg-gray-50" placeholder="VD: 0912345678">
                         <p class="text-sm text-red-500 mt-2 hidden" id="error-phone"></p>
                     </div>
@@ -77,7 +77,7 @@ include '../includes/header.php';
             </div>
 
             <!-- Sản phẩm & tổng tiền -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" id="checkout-main-grid">
                 <!-- Danh sách sản phẩm -->
                 <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
                     <div class="flex items-center gap-3 mb-4">
@@ -150,6 +150,62 @@ include '../includes/header.php';
                             <i class="fas fa-check-circle"></i> Đặt hàng
                         </button>
                         <p id="submit-feedback" class="text-sm text-emerald-600 mt-3 hidden">Thông tin hợp lệ. Chức năng đặt hàng sẽ được kích hoạt sau khi tích hợp backend.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trang thành công -->
+            <div id="order-success" class="hidden">
+                <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 mt-6">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div>
+                            <p class="text-sm text-emerald-600 font-semibold uppercase tracking-wide">Đặt hàng thành công</p>
+                            <h2 class="text-3xl font-bold text-gray-900 mt-1" id="success-title">Cảm ơn bạn đã đặt hàng!</h2>
+                            <p class="mt-2 text-gray-600" id="success-subtitle">Đơn hàng của bạn đang được xử lý.</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm text-gray-500">Mã đơn hàng</p>
+                            <p class="text-2xl font-extrabold text-rose-600" id="success-order-code">#000000</p>
+                            <p class="text-sm text-gray-500" id="success-status">Trạng thái: Chờ xác nhận</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2 space-y-4" id="success-items">
+                            <!-- Sản phẩm sẽ render bằng JS -->
+                        </div>
+                        <div class="bg-gray-50 border border-gray-100 rounded-2xl p-6">
+                            <h3 class="text-lg font-bold text-gray-900 mb-4">Thông tin đơn hàng</h3>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between"><span class="text-gray-600">Tên khách:</span><span id="success-customer-name" class="font-semibold text-gray-900"></span></div>
+                                <div class="flex justify-between"><span class="text-gray-600">Số điện thoại:</span><span id="success-customer-phone" class="font-semibold text-gray-900"></span></div>
+                                <div class="flex justify-between"><span class="text-gray-600">Email:</span><span id="success-customer-email" class="font-semibold text-gray-900"></span></div>
+                                <div class="flex justify-between"><span class="text-gray-600">Địa chỉ:</span><span id="success-customer-address" class="font-semibold text-gray-900 text-right"></span></div>
+                                <div class="flex justify-between"><span class="text-gray-600">Thanh toán:</span><span id="success-payment-method" class="font-semibold text-gray-900"></span></div>
+                            </div>
+                            <div class="mt-4 border-t border-gray-200 pt-4 space-y-2 text-sm">
+                                <div class="flex justify-between"><span class="text-gray-600">Tạm tính:</span><span id="success-subtotal" class="font-semibold text-gray-900"></span></div>
+                                <div class="flex justify-between"><span class="text-gray-600">Phí giao:</span><span class="font-semibold text-emerald-600">Miễn phí</span></div>
+                                <div class="flex justify-between text-lg font-bold">
+                                    <span class="text-gray-900">Tổng thanh toán:</span>
+                                    <span id="success-total" class="text-rose-600"></span>
+                                </div>
+                            </div>
+                            <p id="success-note" class="mt-4 text-sm font-semibold text-red-600 leading-relaxed"></p>
+                        </div>
+                    </div>
+
+                    <div id="success-qr" class="hidden mt-6 flex flex-col lg:flex-row gap-6 items-start">
+                        <div class="flex-1">
+                            <div class="bg-amber-50 border border-amber-200 text-amber-800 rounded-xl p-4 text-sm leading-relaxed">
+                                <p class="font-semibold mb-1">Lưu ý thanh toán qua QR</p>
+                                <p>Vui lòng quét mã để thanh toán. Chúng tôi sẽ xác nhận lại sau khi đơn hàng được thanh toán.</p>
+                            </div>
+                        </div>
+                        <div class="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+                            <img src="<?php echo APP_URL; ?>/assets/images/qr/qr.jpg" alt="QR thanh toán" class="w-56 h-56 object-contain">
+                            <p class="mt-2 text-center text-sm text-gray-600">Quét QR để thanh toán</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -260,6 +316,76 @@ function renderOrderItems() {
     totalEl.textContent = formatCurrency(subtotal);
 }
 
+function generateOrderCode() {
+    const now = new Date();
+    const yyyy = now.getFullYear().toString();
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+    const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
+    return `DH${yyyy}${mm}${dd}-${rand}`;
+}
+
+function renderSuccess(order) {
+    const successWrap = document.getElementById('order-success');
+    const successItems = document.getElementById('success-items');
+    const qrBlock = document.getElementById('success-qr');
+    const noteEl = document.getElementById('success-note');
+
+    if (!successWrap || !successItems || !noteEl) return;
+
+    document.getElementById('checkout-form-section')?.classList.add('hidden');
+    document.getElementById('checkout-main-grid')?.classList.add('hidden');
+    successWrap.classList.remove('hidden');
+
+    document.getElementById('success-order-code').textContent = order.code;
+    document.getElementById('success-status').textContent = 'Trạng thái: Chờ xác nhận';
+    document.getElementById('success-customer-name').textContent = order.customer_name;
+    document.getElementById('success-customer-phone').textContent = order.customer_phone;
+    document.getElementById('success-customer-email').textContent = order.customer_email;
+    document.getElementById('success-customer-address').textContent = order.customer_address;
+    document.getElementById('success-payment-method').textContent = order.payment_method === 'cod' ? 'Thanh toán khi nhận hàng (COD)' : 'Chuyển khoản qua QR';
+    document.getElementById('success-subtotal').textContent = formatCurrency(order.subtotal);
+    document.getElementById('success-total').textContent = formatCurrency(order.total);
+
+    const itemsHtml = order.items.map(item => `
+        <div class="flex items-start gap-4 border border-gray-100 rounded-xl p-4">
+            <div class="w-16 h-16 rounded-lg overflow-hidden bg-gray-50 border border-gray-100 flex-shrink-0">
+                <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover">
+            </div>
+            <div class="flex-1">
+                <div class="flex justify-between gap-3">
+                    <div>
+                        <p class="font-semibold text-gray-900">${item.name}</p>
+                        <p class="text-sm text-gray-500">SL: ${item.quantity}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm text-gray-500">Đơn giá</p>
+                        <p class="font-semibold text-gray-900">${formatCurrency(item.price)}</p>
+                    </div>
+                </div>
+                <p class="text-sm text-gray-700 mt-1">Thành tiền: <span class="text-rose-600 font-bold">${formatCurrency(item.line_total)}</span></p>
+            </div>
+        </div>
+    `).join('');
+
+    successItems.innerHTML = itemsHtml;
+
+    const codNote = 'Chúng tôi sẽ xác nhận lại với bạn trong thời gian tới, vui lòng để ý điện thoại.';
+    const qrNote = 'Đơn hàng đã ghi nhận. Vui lòng thanh toán qua mã QR, chúng tôi sẽ xác nhận lại sau khi đơn hàng được thanh toán.';
+
+    if (order.payment_method === 'cod') {
+        noteEl.textContent = codNote;
+        noteEl.classList.remove('text-amber-700');
+        noteEl.classList.add('text-red-600');
+        qrBlock.classList.add('hidden');
+    } else {
+        noteEl.textContent = qrNote;
+        noteEl.classList.remove('text-red-600');
+        noteEl.classList.add('text-amber-700');
+        qrBlock.classList.remove('hidden');
+    }
+}
+
 function clearErrors() {
     ['fullname', 'phone', 'email', 'address', 'payment'].forEach(key => {
         const el = document.getElementById(`error-${key}`);
@@ -342,9 +468,77 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            feedbackEl.classList.remove('hidden');
-            feedbackEl.textContent = 'Thông tin hợp lệ. Chức năng đặt hàng sẽ được kích hoạt sau khi tích hợp backend.';
-            console.log('Payload chuẩn bị gửi:', result.payload);
+            const { cart, products } = getCartData();
+            const items = cart.map(item => {
+                const product = products[item.id] || {};
+                const price = parseFloat(product.sale_price) || parseFloat(product.price) || 0;
+                const quantity = parseInt(item.quantity) || 1;
+                const lineTotal = price * quantity;
+                return {
+                    id: item.id,
+                    name: product.name || `Sản phẩm #${item.id}`,
+                    image: product.image || '<?php echo IMAGES_URL; ?>/products/default.jpg',
+                    slug: product.slug || '',
+                    quantity,
+                    price,
+                    line_total: lineTotal
+                };
+            });
+
+            fetch('<?php echo APP_URL; ?>/api/create_order.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    fullname: result.payload.fullname,
+                    phone: result.payload.phone,
+                    email: result.payload.email,
+                    address: result.payload.address,
+                    note: result.payload.note,
+                    payment_method: result.payload.payment ? result.payload.payment.toUpperCase() : '',
+                    items
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success) {
+                    throw new Error(data.error || data.message || 'Không thể tạo đơn hàng');
+                }
+
+                const order = {
+                    code: data.order.code,
+                    status: data.order.status,
+                    payment_method: data.order.payment_method,
+                    customer_name: result.payload.fullname,
+                    customer_phone: result.payload.phone,
+                    customer_email: result.payload.email,
+                    customer_address: result.payload.address,
+                    subtotal: data.order.subtotal,
+                    total: data.order.total,
+                    items
+                };
+
+                // Hiển thị trang thành công
+                renderSuccess(order);
+
+                // Xoá giỏ hàng local sau khi tạo đơn
+                const guestId = localStorage.getItem('guest_id') || getCookie('guest_id');
+                if (guestId) {
+                    localStorage.removeItem(`cart_${guestId}`);
+                    localStorage.removeItem(`products_${guestId}`);
+                    if (window.updateCartCount) {
+                        window.updateCartCount();
+                    }
+                }
+
+                // Scroll lên đầu trang để thấy kết quả
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            })
+            .catch(err => {
+                console.error(err);
+                feedbackEl.classList.remove('hidden');
+                feedbackEl.classList.add('text-red-600');
+                feedbackEl.textContent = 'Tạo đơn không thành công. Vui lòng thử lại.';
+            });
         });
     }
 });
