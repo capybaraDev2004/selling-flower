@@ -334,6 +334,8 @@ function renderSuccess(order) {
     const qrBlock = document.getElementById('success-qr');
     const noteEl = document.getElementById('success-note');
 
+    const paymentMethod = (order.payment_method || '').toLowerCase();
+
     if (!successWrap || !successItems || !noteEl) return;
 
     document.getElementById('checkout-form-section')?.classList.add('hidden');
@@ -346,7 +348,9 @@ function renderSuccess(order) {
     document.getElementById('success-customer-phone').textContent = order.customer_phone;
     document.getElementById('success-customer-email').textContent = order.customer_email;
     document.getElementById('success-customer-address').textContent = order.customer_address;
-    document.getElementById('success-payment-method').textContent = order.payment_method === 'cod' ? 'Thanh toán khi nhận hàng (COD)' : 'Chuyển khoản qua QR';
+    document.getElementById('success-payment-method').textContent = paymentMethod === 'cod'
+        ? 'Thanh toán khi nhận hàng (COD)'
+        : 'Chuyển khoản qua QR';
     document.getElementById('success-subtotal').textContent = formatCurrency(order.subtotal);
     document.getElementById('success-total').textContent = formatCurrency(order.total);
 
@@ -376,7 +380,7 @@ function renderSuccess(order) {
     const codNote = 'Chúng tôi sẽ xác nhận lại với bạn trong thời gian tới, vui lòng để ý điện thoại.';
     const qrNote = 'Đơn hàng đã ghi nhận. Vui lòng thanh toán qua mã QR, chúng tôi sẽ xác nhận lại sau khi đơn hàng được thanh toán.';
 
-    if (order.payment_method === 'cod') {
+    if (paymentMethod === 'cod') {
         noteEl.textContent = codNote;
         noteEl.classList.remove('text-amber-700');
         noteEl.classList.add('text-red-600');
@@ -507,10 +511,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     throw new Error(data.error || data.message || 'Không thể tạo đơn hàng');
                 }
 
+                const paymentMethod = (data.order.payment_method || '').toLowerCase();
+
                 const order = {
                     code: data.order.code,
                     status: data.order.status,
-                    payment_method: data.order.payment_method,
+                    payment_method: paymentMethod,
                     customer_name: result.payload.fullname,
                     customer_phone: result.payload.phone,
                     customer_email: result.payload.email,
