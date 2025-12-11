@@ -96,8 +96,8 @@ include '../includes/header.php';
 
 <!-- Breadcrumb -->
 <div class="bg-rose-50 py-2">
-    <div class="container mx-auto px-4">
-        <div class="breadcrumb text-lg text-rose-600 font-semibold">
+    <div class="container mx-auto px-4" style="max-height: 40px !important; overflow: hidden;">
+        <div class="breadcrumb text-lg text-rose-600 font-semibold" ">
             <a href="<?php echo APP_URL; ?>" class="hover:text-rose-700">
                 <i class="fas fa-home"></i> Trang chủ
             </a>

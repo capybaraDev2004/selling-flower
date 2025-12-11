@@ -2,6 +2,7 @@
 require_once '../../config/config.php';
 require_once BASE_PATH . '/app/Database/Database.php';
 require_once BASE_PATH . '/app/Models/UserModel.php';
+require_once BASE_PATH . '/app/Models/AddressModel.php';
 require_once BASE_PATH . '/app/Controllers/AuthController.php';
 require_once BASE_PATH . '/app/Middleware/AuthMiddleware.php';
 
@@ -50,7 +51,7 @@ $result = $authController->forgotPassword();
         <div class="forgot-header">
             <i class="fas fa-key fa-3x mb-3"></i>
             <h3 class="mb-0">Quên mật khẩu</h3>
-            <p class="mb-0 mt-2 opacity-75">Nhập email để nhận link reset</p>
+            <p class="mb-0 mt-2 opacity-75">Nhập số điện thoại và email để xác thực</p>
         </div>
         <div class="forgot-body">
             <?php if ($result): ?>
@@ -58,19 +59,63 @@ $result = $authController->forgotPassword();
                     <i class="fas fa-<?php echo $result['success'] ? 'check-circle' : 'exclamation-circle'; ?> me-2"></i>
                     <?php echo htmlspecialchars($result['message']); ?>
                 </div>
+                <?php if (isset($result['show_reset_form'])): ?>
+                    <!-- Hiển thị form đặt mật khẩu mới -->
+                    <form method="POST" action="">
+                        <input type="hidden" name="verified" value="1">
+                        <input type="hidden" name="phone" value="<?php echo htmlspecialchars($_POST['phone'] ?? ''); ?>">
+                        <input type="hidden" name="email" value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>">
+                        
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-lock me-2"></i>Mật khẩu mới
+                            </label>
+                            <input type="password" name="new_password" class="form-control" required minlength="6" autofocus>
+                            <small class="form-text text-muted">Tối thiểu 6 ký tự</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-lock me-2"></i>Xác nhận mật khẩu mới
+                            </label>
+                            <input type="password" name="confirm_new_password" class="form-control" required minlength="6">
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100 mb-3">
+                            <i class="fas fa-check me-2"></i>Đặt lại mật khẩu
+                        </button>
+                    </form>
+                <?php elseif ($result['success'] && isset($result['redirect'])): ?>
+                    <script>
+                        setTimeout(function() {
+                            window.location.href = '<?php echo APP_URL; ?>/admin/login.php?success=reset_success';
+                        }, 2000);
+                    </script>
+                <?php endif; ?>
             <?php endif; ?>
             
+            <?php if (!$result || !isset($result['show_reset_form'])): ?>
             <form method="POST" action="">
+                <div class="mb-3">
+                    <label class="form-label">
+                        <i class="fas fa-phone me-2"></i>Số điện thoại
+                    </label>
+                    <input type="tel" name="phone" class="form-control" required autofocus placeholder="VD: 0123456789" value="<?php echo htmlspecialchars($_POST['phone'] ?? ''); ?>">
+                    <small class="form-text text-muted">Số điện thoại từ địa chỉ chính của cửa hàng</small>
+                </div>
+                
                 <div class="mb-3">
                     <label class="form-label">
                         <i class="fas fa-envelope me-2"></i>Email
                     </label>
-                    <input type="email" name="email" class="form-control" required autofocus>
+                    <input type="email" name="email" class="form-control" required placeholder="VD: admin@example.com" value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>">
+                    <small class="form-text text-muted">Email từ địa chỉ chính của cửa hàng</small>
                 </div>
                 
                 <button type="submit" class="btn btn-primary w-100 mb-3">
-                    <i class="fas fa-paper-plane me-2"></i>Gửi link reset
+                    <i class="fas fa-check me-2"></i>Xác thực và đặt mật khẩu mới
                 </button>
+            <?php endif; ?>
                 
                 <div class="text-center">
                     <a href="<?php echo APP_URL; ?>/admin/login.php" class="text-decoration-none">

@@ -6,7 +6,27 @@
 
 // Cấu hình chung
 define('APP_NAME', 'Hoa Ngọc Anh - Hoa và Quà tặng ý nghĩa');
-define('APP_URL', 'http://localhost/hoaNgocAnh/public');
+
+// Tự động detect protocol (HTTP/HTTPS) và domain
+$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || 
+            (!empty($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443) ||
+            (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
+    ? 'https://' : 'http://';
+
+$host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+$scriptPath = dirname($_SERVER['SCRIPT_NAME'] ?? '');
+// Loại bỏ /public nếu có trong script path
+$basePath = str_replace('/public', '', $scriptPath);
+$basePath = $basePath === '/' ? '' : $basePath;
+
+// Nếu đang ở localhost, giữ nguyên path cũ, nếu không thì dùng domain thực tế
+if (strpos($host, 'localhost') !== false || strpos($host, '127.0.0.1') !== false) {
+    define('APP_URL', $protocol . $host . '/hoaNgocAnh/public');
+} else {
+    // Production: tự động detect domain và protocol
+    define('APP_URL', $protocol . $host . '/public');
+}
+
 define('BASE_PATH', dirname(__DIR__));
 
 // Cấu hình đường dẫn

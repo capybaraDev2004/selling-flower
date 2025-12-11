@@ -111,10 +111,10 @@ include '../includes/header.php';
 ?>
 
 <!-- Category Header -->
-<div class="bg-gradient-to-r from-rose-500 to-pink-500 text-white py-1">
+<div class="bg-gradient-to-r from-rose-500 to-pink-500 text-white py-1 category-breadcrumb-wrapper">
     <div class="container mx-auto px-4">
-        <div class="flex flex-wrap items-center justify-between gap-2">
-            <div class="breadcrumb text-white">
+        <div class="flex flex-wrap items-center justify-between gap-2" style="max-height: 70px !important; overflow: hidden; display: flex; align-items: center;">
+            <div class="breadcrumb text-white category-breadcrumb">
                 <a href="<?php echo APP_URL; ?>" class="text-white hover:underline">
                     <i class="fas fa-home"></i> Trang chủ
                 </a>

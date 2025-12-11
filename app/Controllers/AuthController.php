@@ -6,9 +6,12 @@
 
 class AuthController {
     private $userModel;
+    private $addressModel;
     
     public function __construct() {
         $this->userModel = new UserModel();
+        require_once BASE_PATH . '/app/Models/AddressModel.php';
+        $this->addressModel = new AddressModel();
     }
     
     public function login() {
@@ -68,32 +71,71 @@ class AuthController {
     
     public function forgotPassword() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $email = trim($_POST['email'] ?? '');
-            
-            if (empty($email)) {
-                return ['success' => false, 'message' => 'Vui lòng nhập email'];
+            // Nếu đã xác thực thành công, cho phép đặt mật khẩu mới
+            if (isset($_POST['verified']) && $_POST['verified'] == '1') {
+                $phone = trim($_POST['phone'] ?? '');
+                $email = trim($_POST['email'] ?? '');
+                $newPassword = $_POST['new_password'] ?? '';
+                $confirmNewPassword = $_POST['confirm_new_password'] ?? '';
+                
+                if (empty($newPassword) || empty($confirmNewPassword)) {
+                    return ['success' => false, 'message' => 'Vui lòng nhập đầy đủ thông tin', 'show_reset_form' => true];
+                }
+                
+                if ($newPassword !== $confirmNewPassword) {
+                    return ['success' => false, 'message' => 'Mật khẩu xác nhận không khớp', 'show_reset_form' => true];
+                }
+                
+                if (strlen($newPassword) < 6) {
+                    return ['success' => false, 'message' => 'Mật khẩu phải có ít nhất 6 ký tự', 'show_reset_form' => true];
+                }
+                
+                // Xác thực lại số điện thoại và email để đảm bảo an toàn
+                $mainAddress = $this->addressModel->getMain();
+                if (!$mainAddress || $mainAddress['phone'] !== $phone || $mainAddress['email'] !== $email) {
+                    return ['success' => false, 'message' => 'Thông tin xác thực không hợp lệ'];
+                }
+                
+                // Cập nhật mật khẩu mới
+                $this->userModel->updatePassword($email, $newPassword);
+                
+                return ['success' => true, 'message' => 'Đặt lại mật khẩu thành công. Vui lòng đăng nhập lại.', 'redirect' => true];
             }
             
+            // Bước xác thực: kiểm tra số điện thoại và email
+            $phone = trim($_POST['phone'] ?? '');
+            $email = trim($_POST['email'] ?? '');
+            
+            if (empty($phone) || empty($email)) {
+                return ['success' => false, 'message' => 'Vui lòng nhập đầy đủ số điện thoại và email'];
+            }
+            
+            // Lấy địa chỉ có main = 1
+            $mainAddress = $this->addressModel->getMain();
+            
+            if (!$mainAddress) {
+                return ['success' => false, 'message' => 'Không tìm thấy địa chỉ chính. Vui lòng liên hệ quản trị viên.'];
+            }
+            
+            // Kiểm tra số điện thoại có trùng khớp không
+            if ($mainAddress['phone'] !== $phone) {
+                return ['success' => false, 'message' => 'Số điện thoại không đúng'];
+            }
+            
+            // Kiểm tra email có trùng khớp không
+            if ($mainAddress['email'] !== $email) {
+                return ['success' => false, 'message' => 'Email không đúng'];
+            }
+            
+            // Kiểm tra user admin có tồn tại không
             $user = $this->userModel->findByEmail($email);
             
             if (!$user || $user['role'] !== 'admin') {
-                // Không tiết lộ email có tồn tại hay không
-                return ['success' => true, 'message' => 'Nếu email tồn tại, chúng tôi đã gửi link reset mật khẩu'];
+                return ['success' => false, 'message' => 'Không tìm thấy tài khoản admin'];
             }
             
-            // Tạo token reset
-            $token = bin2hex(random_bytes(32));
-            $expiresAt = date('Y-m-d H:i:s', strtotime('+1 hour'));
-            
-            $this->userModel->createPasswordResetToken($email, $token, $expiresAt);
-            
-            // Gửi email (sẽ implement sau)
-            $resetLink = APP_URL . '/admin/reset-password.php?token=' . $token;
-            
-            // TODO: Gửi email với link reset
-            // mail($email, 'Reset mật khẩu', "Link reset: $resetLink");
-            
-            return ['success' => true, 'message' => 'Nếu email tồn tại, chúng tôi đã gửi link reset mật khẩu'];
+            // Xác thực thành công, hiển thị form đặt mật khẩu mới
+            return ['success' => true, 'message' => 'Xác thực thành công. Vui lòng nhập mật khẩu mới.', 'show_reset_form' => true];
         }
         
         return null;

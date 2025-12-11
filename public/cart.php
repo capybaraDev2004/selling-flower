@@ -13,8 +13,8 @@ include '../includes/header.php';
 <main class="page-main w-full">
 <!-- Breadcrumb -->
     <div class="py-1" style="background: linear-gradient(90deg, #f43f5e 0%, #e11d48 100%);">
-    <div class="container mx-auto px-4"style="max-height: 40px !important;">
-            <div class="breadcrumb text-white font-semibold" >
+    <div class="container mx-auto px-4" style="max-height: 40px !important; overflow: hidden; display: flex; align-items: center;">
+            <div class="breadcrumb text-white font-semibold" style="width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center !important;">
                 <a href="<?php echo APP_URL; ?>" class="text-white hover:text-white">
                     <i class="fas fa-home"></i> Trang chủ
                 </a>
