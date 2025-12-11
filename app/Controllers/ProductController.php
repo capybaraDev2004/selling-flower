@@ -65,19 +65,17 @@ class ProductController {
             return ['success' => false, 'message' => 'Vui lòng nhập mô tả SEO'];
         }
         
-        // Kiểm tra ảnh chính
-        $primaryImageUrl = trim($_POST['primary_image_url'] ?? '');
+        // Kiểm tra ảnh chính - chỉ chấp nhận file upload
         $primaryImageFile = $_FILES['primary_image_file'] ?? null;
-        $finalPrimaryImageUrl = ImageUploader::processImage($primaryImageUrl, $primaryImageFile, 'products');
         
-        if (empty($finalPrimaryImageUrl)) {
+        if (!$primaryImageFile || !isset($primaryImageFile['tmp_name']) || empty($primaryImageFile['tmp_name'])) {
             return ['success' => false, 'message' => 'Vui lòng chọn ảnh chính cho sản phẩm'];
         }
         
         // Tạo slug unique trước khi insert
         $data['slug'] = createUniqueSlug($name, $this->productModel);
         
-        // Tạo sản phẩm (SKU sẽ tự động được tạo)
+        // Tạo sản phẩm trước để có SKU (SKU sẽ tự động được tạo)
         try {
             $productId = $this->productModel->create($data);
             
@@ -86,9 +84,28 @@ class ProductController {
                 return ['success' => false, 'message' => 'Không thể tạo sản phẩm. Vui lòng kiểm tra lại thông tin.'];
             }
             
+            // Lấy SKU từ sản phẩm vừa tạo
+            $product = $this->productModel->findById($productId);
+            if (!$product || empty($product['sku'])) {
+                // Xóa sản phẩm nếu không lấy được SKU
+                $this->productModel->delete($productId);
+                return ['success' => false, 'message' => 'Lỗi khi tạo SKU sản phẩm. Vui lòng thử lại.'];
+            }
+            
+            $sku = $product['sku'];
             $imageModel = new ProductImageModel();
             
-            // Lưu ảnh chính
+            // Upload ảnh chính với tên file = SKU.jpg
+            $uploadResult = ImageUploader::uploadWithCustomName($primaryImageFile, 'products', $sku, true);
+            if (!$uploadResult['success']) {
+                // Xóa sản phẩm nếu upload ảnh thất bại
+                $this->productModel->delete($productId);
+                return ['success' => false, 'message' => $uploadResult['message'] ?? 'Lỗi khi upload ảnh chính'];
+            }
+            
+            $finalPrimaryImageUrl = $uploadResult['url'];
+            
+            // Lưu ảnh chính vào database
             $imageResult = $imageModel->create([
                 'product_id' => $productId,
                 'image_url' => $finalPrimaryImageUrl,
@@ -98,34 +115,53 @@ class ProductController {
             
             // Kiểm tra lỗi khi thêm ảnh
             if (!$imageResult) {
-                // Xóa sản phẩm vừa tạo nếu không thêm được ảnh
+                // Xóa file ảnh và sản phẩm nếu không thêm được ảnh vào database
+                ImageUploader::delete($finalPrimaryImageUrl);
                 $this->productModel->delete($productId);
                 return ['success' => false, 'message' => 'Lỗi khi thêm ảnh sản phẩm. Vui lòng thử lại.'];
             }
             
-            // Xử lý ảnh bổ sung
-            if (isset($_FILES['additional_images']) && !empty($_FILES['additional_images']['name'][0])) {
+            // Xử lý ảnh bổ sung với tên file = SKU_{index}.jpg
+            if (isset($_FILES['additional_images']) && is_array($_FILES['additional_images'])) {
                 $additionalFiles = $_FILES['additional_images'];
-                $fileCount = count($additionalFiles['name']);
                 
-                for ($i = 0; $i < $fileCount; $i++) {
-                    if ($additionalFiles['error'][$i] === UPLOAD_ERR_OK) {
-                        $file = [
-                            'name' => $additionalFiles['name'][$i],
-                            'type' => $additionalFiles['type'][$i],
-                            'tmp_name' => $additionalFiles['tmp_name'][$i],
-                            'error' => $additionalFiles['error'][$i],
-                            'size' => $additionalFiles['size'][$i]
-                        ];
-                        
-                        $uploadResult = ImageUploader::upload($file, 'products');
-                        if ($uploadResult['success']) {
-                            $imageModel->create([
-                                'product_id' => $productId,
-                                'image_url' => $uploadResult['url'],
-                                'is_primary' => 0,
-                                'display_order' => $i + 1
-                            ]);
+                // Kiểm tra xem có file nào được upload không
+                if (isset($additionalFiles['name']) && is_array($additionalFiles['name'])) {
+                    $fileCount = count($additionalFiles['name']);
+                    
+                    // Kiểm tra xem có ít nhất một file hợp lệ không
+                    $hasValidFile = false;
+                    for ($i = 0; $i < $fileCount; $i++) {
+                        if (isset($additionalFiles['error'][$i]) && $additionalFiles['error'][$i] === UPLOAD_ERR_OK) {
+                            $hasValidFile = true;
+                            break;
+                        }
+                    }
+                    
+                    if ($hasValidFile) {
+                        for ($i = 0; $i < $fileCount; $i++) {
+                            if (isset($additionalFiles['error'][$i]) && $additionalFiles['error'][$i] === UPLOAD_ERR_OK) {
+                                $file = [
+                                    'name' => $additionalFiles['name'][$i],
+                                    'type' => $additionalFiles['type'][$i],
+                                    'tmp_name' => $additionalFiles['tmp_name'][$i],
+                                    'error' => $additionalFiles['error'][$i],
+                                    'size' => $additionalFiles['size'][$i]
+                                ];
+                                
+                                // Tên file = SKU_{index+1}.jpg (index bắt đầu từ 0, nhưng số thứ tự từ 1)
+                                $customFileName = $sku . '_' . ($i + 1);
+                                $uploadResult = ImageUploader::uploadWithCustomName($file, 'products', $customFileName, true);
+                                
+                                if ($uploadResult['success']) {
+                                    $imageModel->create([
+                                        'product_id' => $productId,
+                                        'image_url' => $uploadResult['url'],
+                                        'is_primary' => 0,
+                                        'display_order' => $i + 1
+                                    ]);
+                                }
+                            }
                         }
                     }
                 }
@@ -163,7 +199,26 @@ class ProductController {
                         return ['success' => false, 'message' => 'Lỗi khi tạo sản phẩm. Vui lòng thử lại.'];
                     }
                     
+                    // Lấy SKU từ sản phẩm vừa tạo
+                    $product = $this->productModel->findById($productId);
+                    if (!$product || empty($product['sku'])) {
+                        $this->productModel->delete($productId);
+                        return ['success' => false, 'message' => 'Lỗi khi tạo SKU sản phẩm. Vui lòng thử lại.'];
+                    }
+                    
+                    $sku = $product['sku'];
                     $imageModel = new ProductImageModel();
+                    
+                    // Upload ảnh chính với tên file = SKU.jpg
+                    $uploadResult = ImageUploader::uploadWithCustomName($primaryImageFile, 'products', $sku, true);
+                    if (!$uploadResult['success']) {
+                        $this->productModel->delete($productId);
+                        return ['success' => false, 'message' => $uploadResult['message'] ?? 'Lỗi khi upload ảnh chính'];
+                    }
+                    
+                    $finalPrimaryImageUrl = $uploadResult['url'];
+                    
+                    // Lưu ảnh chính vào database
                     $imageResult = $imageModel->create([
                         'product_id' => $productId,
                         'image_url' => $finalPrimaryImageUrl,
@@ -172,56 +227,72 @@ class ProductController {
                     ]);
                     
                     if (!$imageResult) {
+                        ImageUploader::delete($finalPrimaryImageUrl);
                         $this->productModel->delete($productId);
                         return ['success' => false, 'message' => 'Lỗi khi thêm ảnh sản phẩm. Vui lòng thử lại.'];
                     }
                     
-                    // Xử lý ảnh bổ sung
-                    if (isset($_FILES['additional_images']) && !empty($_FILES['additional_images']['name'][0])) {
+                    // Xử lý ảnh bổ sung với tên file = SKU_{index}.jpg
+                    if (isset($_FILES['additional_images']) && is_array($_FILES['additional_images'])) {
                         $additionalFiles = $_FILES['additional_images'];
-                        $fileCount = count($additionalFiles['name']);
                         
-                        for ($i = 0; $i < $fileCount; $i++) {
-                            if ($additionalFiles['error'][$i] === UPLOAD_ERR_OK) {
-                                $file = [
-                                    'name' => $additionalFiles['name'][$i],
-                                    'type' => $additionalFiles['type'][$i],
-                                    'tmp_name' => $additionalFiles['tmp_name'][$i],
-                                    'error' => $additionalFiles['error'][$i],
-                                    'size' => $additionalFiles['size'][$i]
-                                ];
-                                
-                                $uploadResult = ImageUploader::upload($file, 'products');
-                                if ($uploadResult['success']) {
-                                    $imageModel->create([
-                                        'product_id' => $productId,
-                                        'image_url' => $uploadResult['url'],
-                                        'is_primary' => 0,
-                                        'display_order' => $i + 1
-                                    ]);
+                        if (isset($additionalFiles['name']) && is_array($additionalFiles['name'])) {
+                            $fileCount = count($additionalFiles['name']);
+                            
+                            $hasValidFile = false;
+                            for ($i = 0; $i < $fileCount; $i++) {
+                                if (isset($additionalFiles['error'][$i]) && $additionalFiles['error'][$i] === UPLOAD_ERR_OK) {
+                                    $hasValidFile = true;
+                                    break;
+                                }
+                            }
+                            
+                            if ($hasValidFile) {
+                                for ($i = 0; $i < $fileCount; $i++) {
+                                    if (isset($additionalFiles['error'][$i]) && $additionalFiles['error'][$i] === UPLOAD_ERR_OK) {
+                                        $file = [
+                                            'name' => $additionalFiles['name'][$i],
+                                            'type' => $additionalFiles['type'][$i],
+                                            'tmp_name' => $additionalFiles['tmp_name'][$i],
+                                            'error' => $additionalFiles['error'][$i],
+                                            'size' => $additionalFiles['size'][$i]
+                                        ];
+                                        
+                                        $customFileName = $sku . '_' . ($i + 1);
+                                        $uploadResult = ImageUploader::uploadWithCustomName($file, 'products', $customFileName, true);
+                                        
+                                        if ($uploadResult['success']) {
+                                            $imageModel->create([
+                                                'product_id' => $productId,
+                                                'image_url' => $uploadResult['url'],
+                                                'is_primary' => 0,
+                                                'display_order' => $i + 1
+                                            ]);
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
-                }
-            }
-            
-            // Xử lý lưu attributes
-            if (isset($_POST['attributes']) && is_array($_POST['attributes'])) {
-                $attributeModel = new ProductAttributeModel();
-                $attributes = [];
-                foreach ($_POST['attributes'] as $attr) {
-                    $attrName = trim($attr['attribute_name'] ?? '');
-                    $attrValue = trim($attr['attribute_value'] ?? '');
-                    if (!empty($attrName) && !empty($attrValue)) {
-                        $attributes[] = [
-                            'attribute_name' => $attrName,
-                            'attribute_value' => $attrValue
-                        ];
+                    
+                    // Xử lý lưu attributes
+                    if (isset($_POST['attributes']) && is_array($_POST['attributes'])) {
+                        $attributeModel = new ProductAttributeModel();
+                        $attributes = [];
+                        foreach ($_POST['attributes'] as $attr) {
+                            $attrName = trim($attr['attribute_name'] ?? '');
+                            $attrValue = trim($attr['attribute_value'] ?? '');
+                            if (!empty($attrName) && !empty($attrValue)) {
+                                $attributes[] = [
+                                    'attribute_name' => $attrName,
+                                    'attribute_value' => $attrValue
+                                ];
+                            }
+                        }
+                        if (!empty($attributes)) {
+                            $attributeModel->createMultiple($productId, $attributes);
+                        }
                     }
-                }
-                if (!empty($attributes)) {
-                    $attributeModel->createMultiple($productId, $attributes);
-                }
-            }
                     
                     return ['success' => true, 'message' => 'Thêm sản phẩm thành công'];
                 } catch (Exception $e2) {
@@ -279,6 +350,13 @@ class ProductController {
         
         try {
         if ($this->productModel->update($id, $data)) {
+            // Lấy SKU từ sản phẩm hiện tại
+            $product = $this->productModel->findById($id);
+            if (!$product || empty($product['sku'])) {
+                return ['success' => false, 'message' => 'Không tìm thấy SKU sản phẩm. Vui lòng thử lại.'];
+            }
+            
+            $sku = $product['sku'];
             $imageModel = new ProductImageModel();
                 
                 // Xử lý xóa ảnh hiện có (nếu có)
@@ -301,58 +379,84 @@ class ProductController {
                     }
                 }
             
-            // Xử lý ảnh chính mới (nếu có)
-            $primaryImageUrl = trim($_POST['primary_image_url'] ?? '');
+            // Xử lý ảnh chính mới (nếu có file upload)
             $primaryImageFile = $_FILES['primary_image_file'] ?? null;
             
-            $finalPrimaryImageUrl = ImageUploader::processImage($primaryImageUrl, $primaryImageFile, 'products');
-            
-            if ($finalPrimaryImageUrl) {
-                // Xóa ảnh chính cũ
-                $oldImages = $imageModel->getByProductId($id);
-                foreach ($oldImages as $img) {
-                    if ($img['is_primary'] == 1) {
-                        ImageUploader::delete($img['image_url']);
-                        $imageModel->delete($img['id']);
-                    }
-                }
+            if ($primaryImageFile && isset($primaryImageFile['tmp_name']) && !empty($primaryImageFile['tmp_name'])) {
+                // Upload ảnh chính với tên file = SKU.jpg (sẽ ghi đè ảnh cũ nếu có)
+                $uploadResult = ImageUploader::uploadWithCustomName($primaryImageFile, 'products', $sku, true);
                 
-                // Thêm ảnh chính mới
-                $imageModel->create([
-                    'product_id' => $id,
-                    'image_url' => $finalPrimaryImageUrl,
-                    'is_primary' => 1,
-                    'display_order' => 0
-                ]);
+                if ($uploadResult['success']) {
+                    // Xóa ảnh chính cũ khỏi database (file đã được ghi đè)
+                    $oldImages = $imageModel->getByProductId($id);
+                    foreach ($oldImages as $img) {
+                        if ($img['is_primary'] == 1) {
+                            // Chỉ xóa record trong database, không xóa file vì đã được ghi đè
+                            $imageModel->delete($img['id']);
+                        }
+                    }
+                    
+                    // Thêm ảnh chính mới vào database
+                    $imageModel->create([
+                        'product_id' => $id,
+                        'image_url' => $uploadResult['url'],
+                        'is_primary' => 1,
+                        'display_order' => 0
+                    ]);
+                }
             }
             
             // Xử lý ảnh bổ sung mới (nếu có)
-            if (isset($_FILES['additional_images']) && !empty($_FILES['additional_images']['name'][0])) {
+            if (isset($_FILES['additional_images']) && is_array($_FILES['additional_images'])) {
                 $additionalFiles = $_FILES['additional_images'];
-                $fileCount = count($additionalFiles['name']);
                 
-                // Lấy số thứ tự hiện tại
-                $existingImages = $imageModel->getByProductId($id);
-                $currentOrder = count($existingImages);
-                
-                for ($i = 0; $i < $fileCount; $i++) {
-                    if ($additionalFiles['error'][$i] === UPLOAD_ERR_OK) {
-                        $file = [
-                            'name' => $additionalFiles['name'][$i],
-                            'type' => $additionalFiles['type'][$i],
-                            'tmp_name' => $additionalFiles['tmp_name'][$i],
-                            'error' => $additionalFiles['error'][$i],
-                            'size' => $additionalFiles['size'][$i]
-                        ];
+                // Kiểm tra xem có file nào được upload không
+                if (isset($additionalFiles['name']) && is_array($additionalFiles['name'])) {
+                    $fileCount = count($additionalFiles['name']);
+                    
+                    // Kiểm tra xem có ít nhất một file hợp lệ không
+                    $hasValidFile = false;
+                    for ($i = 0; $i < $fileCount; $i++) {
+                        if (isset($additionalFiles['error'][$i]) && $additionalFiles['error'][$i] === UPLOAD_ERR_OK) {
+                            $hasValidFile = true;
+                            break;
+                        }
+                    }
+                    
+                    if ($hasValidFile) {
+                        // Đếm số ảnh phụ hiện có để tiếp tục số thứ tự
+                        $existingImages = $imageModel->getByProductId($id);
+                        $existingAdditionalCount = 0;
+                        foreach ($existingImages as $img) {
+                            if ($img['is_primary'] == 0 || $img['is_primary'] == '0') {
+                                $existingAdditionalCount++;
+                            }
+                        }
                         
-                        $uploadResult = ImageUploader::upload($file, 'products');
-                        if ($uploadResult['success']) {
-                            $imageModel->create([
-                                'product_id' => $id,
-                                'image_url' => $uploadResult['url'],
-                                'is_primary' => 0,
-                                'display_order' => $currentOrder + $i + 1
-                            ]);
+                        for ($i = 0; $i < $fileCount; $i++) {
+                            if (isset($additionalFiles['error'][$i]) && $additionalFiles['error'][$i] === UPLOAD_ERR_OK) {
+                                $file = [
+                                    'name' => $additionalFiles['name'][$i],
+                                    'type' => $additionalFiles['type'][$i],
+                                    'tmp_name' => $additionalFiles['tmp_name'][$i],
+                                    'error' => $additionalFiles['error'][$i],
+                                    'size' => $additionalFiles['size'][$i]
+                                ];
+                                
+                                // Tên file = SKU_{số thứ tự tiếp theo}.jpg
+                                $imageNumber = $existingAdditionalCount + $i + 1;
+                                $customFileName = $sku . '_' . $imageNumber;
+                                $uploadResult = ImageUploader::uploadWithCustomName($file, 'products', $customFileName, true);
+                                
+                                if ($uploadResult['success']) {
+                                    $imageModel->create([
+                                        'product_id' => $id,
+                                        'image_url' => $uploadResult['url'],
+                                        'is_primary' => 0,
+                                        'display_order' => $existingAdditionalCount + $i + 1
+                                    ]);
+                                }
+                            }
                         }
                     }
                 }
@@ -387,6 +491,13 @@ class ProductController {
                 $data['slug'] = createUniqueSlug($name, $this->productModel, $id);
                 try {
                     if ($this->productModel->update($id, $data)) {
+                        // Lấy SKU từ sản phẩm hiện tại
+                        $product = $this->productModel->findById($id);
+                        if (!$product || empty($product['sku'])) {
+                            return ['success' => false, 'message' => 'Không tìm thấy SKU sản phẩm. Vui lòng thử lại.'];
+                        }
+                        
+                        $sku = $product['sku'];
                         $imageModel = new ProductImageModel();
                         
                         // Xử lý xóa ảnh hiện có (nếu có)
@@ -406,57 +517,84 @@ class ProductController {
                             }
                         }
                         
-                        // Xử lý ảnh chính mới (nếu có)
-                        $primaryImageUrl = trim($_POST['primary_image_url'] ?? '');
+                        // Xử lý ảnh chính mới (nếu có file upload)
                         $primaryImageFile = $_FILES['primary_image_file'] ?? null;
-                        $finalPrimaryImageUrl = ImageUploader::processImage($primaryImageUrl, $primaryImageFile, 'products');
                         
-                        if ($finalPrimaryImageUrl) {
-                            $oldImages = $imageModel->getByProductId($id);
-                            foreach ($oldImages as $img) {
-                                if ($img['is_primary'] == 1) {
-                                    ImageUploader::delete($img['image_url']);
-                                    $imageModel->delete($img['id']);
-                                }
-                            }
+                        if ($primaryImageFile && isset($primaryImageFile['tmp_name']) && !empty($primaryImageFile['tmp_name'])) {
+                            // Upload ảnh chính với tên file = SKU.jpg
+                            $uploadResult = ImageUploader::uploadWithCustomName($primaryImageFile, 'products', $sku, true);
                             
-                            $imageModel->create([
-                                'product_id' => $id,
-                                'image_url' => $finalPrimaryImageUrl,
-                                'is_primary' => 1,
-                                'display_order' => 0
-                            ]);
+                            if ($uploadResult['success']) {
+                                $oldImages = $imageModel->getByProductId($id);
+                                foreach ($oldImages as $img) {
+                                    if ($img['is_primary'] == 1) {
+                                        // Chỉ xóa record trong database, file đã được ghi đè
+                                        $imageModel->delete($img['id']);
+                                    }
+                                }
+                                
+                                $imageModel->create([
+                                    'product_id' => $id,
+                                    'image_url' => $uploadResult['url'],
+                                    'is_primary' => 1,
+                                    'display_order' => 0
+                                ]);
+                            }
                         }
                         
                         // Xử lý ảnh bổ sung mới (nếu có)
-                        if (isset($_FILES['additional_images']) && !empty($_FILES['additional_images']['name'][0])) {
+                        if (isset($_FILES['additional_images']) && is_array($_FILES['additional_images'])) {
                             $additionalFiles = $_FILES['additional_images'];
-                            $fileCount = count($additionalFiles['name']);
-                            $existingImages = $imageModel->getByProductId($id);
-                            $currentOrder = count($existingImages);
                             
-                            for ($i = 0; $i < $fileCount; $i++) {
-                                if ($additionalFiles['error'][$i] === UPLOAD_ERR_OK) {
-                                    $file = [
-                                        'name' => $additionalFiles['name'][$i],
-                                        'type' => $additionalFiles['type'][$i],
-                                        'tmp_name' => $additionalFiles['tmp_name'][$i],
-                                        'error' => $additionalFiles['error'][$i],
-                                        'size' => $additionalFiles['size'][$i]
-                                    ];
+                            if (isset($additionalFiles['name']) && is_array($additionalFiles['name'])) {
+                                $fileCount = count($additionalFiles['name']);
+                                
+                                $hasValidFile = false;
+                                for ($i = 0; $i < $fileCount; $i++) {
+                                    if (isset($additionalFiles['error'][$i]) && $additionalFiles['error'][$i] === UPLOAD_ERR_OK) {
+                                        $hasValidFile = true;
+                                        break;
+                                    }
+                                }
+                                
+                                if ($hasValidFile) {
+                                    // Đếm số ảnh phụ hiện có
+                                    $existingImages = $imageModel->getByProductId($id);
+                                    $existingAdditionalCount = 0;
+                                    foreach ($existingImages as $img) {
+                                        if ($img['is_primary'] == 0 || $img['is_primary'] == '0') {
+                                            $existingAdditionalCount++;
+                                        }
+                                    }
                                     
-                                    $uploadResult = ImageUploader::upload($file, 'products');
-                                    if ($uploadResult['success']) {
-                                        $imageModel->create([
-                                            'product_id' => $id,
-                                            'image_url' => $uploadResult['url'],
-                                            'is_primary' => 0,
-                                            'display_order' => $currentOrder + $i + 1
-                                        ]);
+                                    for ($i = 0; $i < $fileCount; $i++) {
+                                        if (isset($additionalFiles['error'][$i]) && $additionalFiles['error'][$i] === UPLOAD_ERR_OK) {
+                                            $file = [
+                                                'name' => $additionalFiles['name'][$i],
+                                                'type' => $additionalFiles['type'][$i],
+                                                'tmp_name' => $additionalFiles['tmp_name'][$i],
+                                                'error' => $additionalFiles['error'][$i],
+                                                'size' => $additionalFiles['size'][$i]
+                                            ];
+                                            
+                                            // Tên file = SKU_{số thứ tự tiếp theo}.jpg
+                                            $imageNumber = $existingAdditionalCount + $i + 1;
+                                            $customFileName = $sku . '_' . $imageNumber;
+                                            $uploadResult = ImageUploader::uploadWithCustomName($file, 'products', $customFileName, true);
+                                            
+                                            if ($uploadResult['success']) {
+                                                $imageModel->create([
+                                                    'product_id' => $id,
+                                                    'image_url' => $uploadResult['url'],
+                                                    'is_primary' => 0,
+                                                    'display_order' => $existingAdditionalCount + $i + 1
+                                                ]);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
-                    }
-                }
-            }
             
             // Xử lý lưu attributes
             if (isset($_POST['attributes']) && is_array($_POST['attributes'])) {

@@ -77,7 +77,7 @@ $display_price = $has_sale ? $product['sale_price'] : $product['price'];
         <!-- Rating & Reviews -->
         <?php if (isset($product['rating']) && $product['rating'] > 0): ?>
             <div class="product-rating mb-2 text-sm">
-                <div class="product-rating-stars-score flex items-center gap-2 mb-1">
+                <div class="product-rating-stars-score flex items-center mb-1">
                     <div class="product-rating-stars flex items-center text-yellow-400">
                     <?php for ($i = 1; $i <= 5; $i++): ?>
                         <?php if ($i <= $product['rating']): ?>

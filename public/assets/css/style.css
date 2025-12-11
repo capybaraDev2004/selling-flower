@@ -271,7 +271,8 @@ html {
     align-items: center;
     gap: 8px;
     flex-wrap: wrap;
-    padding: 16px 0;
+    padding-top: 16px;
+    padding-bottom: 0px !important;
 }
 
 .breadcrumb a {

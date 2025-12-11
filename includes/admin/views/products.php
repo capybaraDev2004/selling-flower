@@ -421,12 +421,7 @@ showToast('<?php echo addslashes($errorMessage); ?>', 'error');
                                 </div>
                                 
                                 <div class="mb-2">
-                                    <label class="form-label small text-muted">Hoặc nhập URL hình ảnh:</label>
-                                    <input type="text" name="primary_image_url" class="form-control" id="formPrimaryImageUrl" placeholder="https://example.com/image.jpg">
-                                </div>
-                                <div class="text-center text-muted mb-2">HOẶC</div>
-                                <div class="mb-2">
-                                    <label class="form-label small text-muted">Hoặc chọn file từ máy:</label>
+                                    <label class="form-label small text-muted">Chọn file từ máy:</label>
                                     <input type="file" name="primary_image_file" class="form-control" id="formPrimaryImageFile" accept="image/*">
                                     <small class="form-text text-muted">Chấp nhận: JPG, PNG, GIF, WEBP (tối đa 5MB)</small>
                                 </div>
@@ -594,7 +589,6 @@ function showModal(action, id = null) {
         document.getElementById('additionalImagesPreviewContainer').style.display = 'none';
         document.getElementById('existingAdditionalImages').innerHTML = '';
         document.getElementById('currentAdditionalImagesContainer').style.display = 'none';
-        document.getElementById('formPrimaryImageUrl').value = '';
         document.getElementById('formPrimaryImageFile').value = '';
         document.getElementById('formAdditionalImages').value = '';
         window.selectedFiles = [];
@@ -631,7 +625,6 @@ function showModal(action, id = null) {
             const primaryImage = productImagesData.find(img => img.is_primary == 1 || img.is_primary == '1');
             if (primaryImage && primaryImage.image_url) {
                 const imageUrl = primaryImage.image_url;
-                document.getElementById('formPrimaryImageUrl').value = imageUrl;
                 const imgElement = document.getElementById('currentPrimaryImage');
                 imgElement.src = imageUrl;
                 imgElement.onload = function() {
@@ -712,15 +705,6 @@ document.getElementById('formPrimaryImageFile').addEventListener('change', funct
     }
 });
 
-document.getElementById('formPrimaryImageUrl').addEventListener('input', function(e) {
-    const url = e.target.value;
-    if (url && (url.startsWith('http') || url.startsWith('/'))) {
-        document.getElementById('previewPrimaryImg').src = url;
-        document.getElementById('primaryImagePreview').style.display = 'block';
-    } else {
-        document.getElementById('primaryImagePreview').style.display = 'none';
-    }
-});
 
 // Hàm xóa ảnh hiện có
 function removeExistingImage(imageId, element) {
@@ -843,6 +827,11 @@ function updateFileInput() {
 document.getElementById('productForm').addEventListener('submit', function(e) {
     const formAction = document.getElementById('formAction').value;
     
+    // Đảm bảo cập nhật file input cho ảnh phụ trước khi submit
+    if (window.selectedFiles && window.selectedFiles.length > 0) {
+        updateFileInput();
+    }
+    
     // Kiểm tra attributes: phải có ít nhất một thuộc tính hợp lệ
     const attributeRows = document.querySelectorAll('.attribute-row');
     let hasValidAttribute = false;
@@ -863,20 +852,12 @@ document.getElementById('productForm').addEventListener('submit', function(e) {
     
     // Chỉ validate khi tạo mới (không validate khi edit vì có thể giữ nguyên ảnh cũ)
     if (formAction === 'create') {
-        const primaryImageUrl = document.getElementById('formPrimaryImageUrl').value.trim();
         const primaryImageFile = document.getElementById('formPrimaryImageFile').files[0];
         
-        // Kiểm tra ảnh chính: phải có ít nhất URL hoặc file
-        if (!primaryImageUrl && !primaryImageFile) {
+        // Kiểm tra ảnh chính: phải có file
+        if (!primaryImageFile) {
             e.preventDefault();
-            alert('Vui lòng nhập URL hình ảnh hoặc chọn file ảnh chính cho sản phẩm.');
-            return false;
-        }
-        
-        // Kiểm tra URL hợp lệ nếu có nhập URL
-        if (primaryImageUrl && !primaryImageUrl.startsWith('http') && !primaryImageUrl.startsWith('/')) {
-            e.preventDefault();
-            alert('URL hình ảnh không hợp lệ. Vui lòng nhập URL đầy đủ (bắt đầu bằng http/https) hoặc đường dẫn tuyệt đối (bắt đầu bằng /).');
+            alert('Vui lòng chọn file ảnh chính cho sản phẩm.');
             return false;
         }
     }

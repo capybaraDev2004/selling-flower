@@ -111,19 +111,19 @@ include '../includes/header.php';
 ?>
 
 <!-- Category Header -->
-<div class="bg-gradient-to-r from-rose-500 to-pink-500 text-white py-2">
+<div class="bg-gradient-to-r from-rose-500 to-pink-500 text-white py-1">
     <div class="container mx-auto px-4">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-            <div class="breadcrumb text-white mb-1 text-base">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="breadcrumb text-white">
                 <a href="<?php echo APP_URL; ?>" class="text-white hover:underline">
                     <i class="fas fa-home"></i> Trang chủ
                 </a>
                 <span class="separator text-white/60">/</span>
                 <span class="font-medium"><?php echo $category_name; ?></span>
             </div>
-            <form method="get" class="mb-1">
+            <form method="get" class="category-sort-form">
                 <input type="hidden" name="cat" value="<?php echo htmlspecialchars($category_slug); ?>">
-                <select name="sort" class="bg-white text-gray-800 rounded-full px-4 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-white/60" onchange="this.form.submit()">
+                <select name="sort" class="bg-white text-gray-800 rounded-full px-4 py-1.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-white/60" onchange="this.form.submit()">
                     <?php foreach ($allowedSorts as $key => $label): ?>
                         <option value="<?php echo $key; ?>" <?php echo $sort === $key ? 'selected' : ''; ?>>
                             <?php echo $label; ?>
@@ -134,6 +134,25 @@ include '../includes/header.php';
         </div>
     </div>
 </div>
+
+<style>
+/* Mobile: Căn giữa dropdown sort */
+@media (max-width: 768px) {
+    .category-sort-form {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        margin-top: 0.5rem;
+        padding-bottom: 15px;
+    }
+    
+    .category-sort-form select {
+        width: 100%;
+        max-width: 280px;
+        margin-top: -15px;
+    }
+}
+</style>
 
 <!-- Products Section -->
 <section class="py-12">

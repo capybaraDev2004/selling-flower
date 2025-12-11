@@ -74,7 +74,7 @@ function ensureTables($conn) {
 
 function generateOrderCode() {
     $now = new DateTime('now', new DateTimeZone('Asia/Ho_Chi_Minh'));
-    return 'DH' . $now->format('Ymd-His') . '-' . strtoupper(substr(uniqid(), -4));
+    return 'DH' . $now->format('Ymd-His');
 }
 
 try {

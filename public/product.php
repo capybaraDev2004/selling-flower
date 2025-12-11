@@ -191,8 +191,8 @@ include '../includes/header.php';
                     <h1 class="text-3xl font-bold text-gray-800 mb-3"><?php echo $product['name']; ?></h1>
 
                     <!-- Rating & Reviews -->
-                    <div class="flex items-center gap-4 mb-4">
-                        <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-2 mb-4">
+                        <div class="flex items-center">
                             <div class="flex text-yellow-400">
                                 <?php 
                                 $fullStars = floor($product['rating']);
@@ -208,7 +208,7 @@ include '../includes/header.php';
                                 <?php endif; endfor; ?>
                             </div>
                             <span class="font-semibold"><?php echo number_format($product['rating'], 1); ?></span>
-                            <span class="text-gray-600">(<?php echo number_format($product['reviews']); ?> đánh giá)</span>
+                            <span class="text-gray-600" style="margin-left: 5px;">(<?php echo number_format($product['reviews']); ?> đánh giá)</span>
                         </div>
                         <div class="text-gray-600">
                             <i class="fas fa-box mr-1"></i>

@@ -9,7 +9,7 @@ include '../includes/header.php';
 
 <main class="page-main w-full bg-gray-50 min-h-screen">
     <!-- Breadcrumb -->
-    <div class="py-4" style="background: linear-gradient(90deg, #f43f5e 0%, #e11d48 100%);">
+    <div class="py-2" style="background: linear-gradient(90deg, #f43f5e 0%, #e11d48 100%);">
         <div class="container mx-auto px-4">
             <div class="breadcrumb text-white font-semibold">
                 <a href="<?php echo APP_URL; ?>" class="text-white hover:text-white">
@@ -33,29 +33,30 @@ include '../includes/header.php';
                     <h1 class="text-3xl font-bold text-gray-900">Xác nhận đơn hàng</h1>
                     <p class="text-gray-600 mt-1">Kiểm tra sản phẩm, nhập thông tin nhận hàng và phương thức thanh toán.</p>
                 </div>
-                <a href="<?php echo APP_URL; ?>/cart.php" class="text-rose-500 hover:text-rose-600 font-semibold flex items-center gap-2">
-                    <i class="fas fa-arrow-left"></i> Quay lại giỏ hàng
+                <a href="<?php echo APP_URL; ?>/cart.php" class="inline-flex items-center gap-2 px-4 py-2 bg-white border-2 border-rose-500 text-rose-500 rounded-lg font-semibold hover:bg-rose-500 hover:text-white transition-all duration-200 shadow-sm hover:shadow-md">
+                    <i class="fas fa-arrow-left"></i> 
+                    <span>Quay lại giỏ hàng</span>
                 </a>
             </div>
 
             <!-- Thông tin nhận hàng -->
             <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-8" id="checkout-form-section">
                 <div class="flex items-center gap-3 mb-4">
-                    <div class="w-10 h-10 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center font-bold">1</div>
+                    <div class="w-10 h-10 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center font-bold" style="justify-content: center !important;">1</div>
                     <div>
                         <h2 class="text-xl font-bold text-gray-900">Thông tin người nhận</h2>
                         <p class="text-sm text-gray-500">Điền thông tin để chúng tôi liên hệ giao hàng.</p>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6" style="gap-6:1.25rem !important;">
                     <div>
                         <label class="block text-sm font-semibold text-gray-800 mb-2">Họ tên *</label>
                         <input type="text" id="fullname" class="w-full rounded-xl border border-gray-200 px-4 py-3 focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition bg-gray-50" placeholder="VD: Nguyễn Văn A">
                         <p class="text-sm text-red-500 mt-2 hidden" id="error-fullname"></p>
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold text-gray-800 mb-2">Số điện thoại *(Ưu tiên số điện thoại có dùng zalo)</label>
+                        <label class="block text-sm font-semibold text-gray-800 mb-2">Số điện thoại *(Ưu tiên số có dùng zalo)</label>
                         <input type="tel" id="phone" class="w-full rounded-xl border border-gray-200 px-4 py-3 focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition bg-gray-50" placeholder="VD: 0912345678">
                         <p class="text-sm text-red-500 mt-2 hidden" id="error-phone"></p>
                     </div>
@@ -321,8 +322,10 @@ function generateOrderCode() {
     const yyyy = now.getFullYear().toString();
     const mm = String(now.getMonth() + 1).padStart(2, '0');
     const dd = String(now.getDate()).padStart(2, '0');
-    const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
-    return `DH${yyyy}${mm}${dd}-${rand}`;
+    const hh = String(now.getHours()).padStart(2, '0');
+    const min = String(now.getMinutes()).padStart(2, '0');
+    const ss = String(now.getSeconds()).padStart(2, '0');
+    return `DH${yyyy}${mm}${dd}-${hh}${min}${ss}`;
 }
 
 function renderSuccess(order) {
@@ -543,6 +546,119 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 </script>
+
+<style>
+/* Mobile: Căn trái tất cả nội dung */
+@media (max-width: 768px) {
+    /* Header section */
+    #checkout-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 1rem !important;
+    }
+    
+    #checkout-header > div:first-child {
+        text-align: left !important;
+        width: 100% !important;
+    }
+    
+    #checkout-header a {
+        align-self: flex-start !important;
+    }
+    
+    /* Form section */
+    #checkout-form-section {
+        text-align: left !important;
+    }
+    
+    #checkout-form-section .flex.items-center {
+        justify-content: flex-start !important;
+    }
+    
+    /* Success section */
+    #order-success {
+        text-align: left !important;
+    }
+    
+    #order-success > div > div:first-child {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        text-align: left !important;
+    }
+    
+    #order-success .text-right {
+        text-align: left !important;
+        width: 100% !important;
+        margin-top: 1rem !important;
+    }
+    
+    /* Grid items */
+    #order-success .grid {
+        grid-template-columns: 1fr !important;
+    }
+    
+    #order-success .lg\:col-span-2 {
+        grid-column: 1 !important;
+    }
+    
+    /* Product items */
+    #order-items .flex,
+    #success-items .flex {
+        align-items: flex-start !important;
+        text-align: left !important;
+    }
+    
+    #order-items .text-right,
+    #success-items .text-right {
+        text-align: left !important;
+        width: 100% !important;
+        margin-top: 0.5rem !important;
+    }
+    
+    /* Info boxes */
+    #checkout-form-section .w-10,
+    #order-success .w-10 {
+        flex-shrink: 0 !important;
+    }
+    
+    /* All text elements */
+    #checkout-form-section h2,
+    #checkout-form-section p,
+    #checkout-form-section label,
+    #order-success h2,
+    #order-success h3,
+    #order-success p,
+    #order-success span {
+        text-align: left !important;
+    }
+    
+    /* Payment method labels */
+    #checkout-form-section label.flex {
+        justify-content: flex-start !important;
+        text-align: left !important;
+    }
+    
+    /* Summary box */
+    #order-success .bg-gray-50 {
+        text-align: left !important;
+    }
+    
+    #order-success .flex.justify-between {
+        justify-content: space-between !important;
+        text-align: left !important;
+    }
+    
+    /* QR section */
+    #success-qr {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+    }
+    
+    #success-qr .text-center {
+        text-align: left !important;
+    }
+}
+</style>
 
 <?php include '../includes/footer.php'; ?>
 

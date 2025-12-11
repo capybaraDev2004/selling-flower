@@ -12,7 +12,7 @@ include '../includes/header.php';
 
 <main class="page-main w-full">
 <!-- Breadcrumb -->
-    <div class="py-4" style="background: linear-gradient(90deg, #f43f5e 0%, #e11d48 100%);">
+    <div class="py-1" style="background: linear-gradient(90deg, #f43f5e 0%, #e11d48 100%);">
     <div class="container mx-auto px-4">
             <div class="breadcrumb text-white font-semibold">
                 <a href="<?php echo APP_URL; ?>" class="text-white hover:text-white">
@@ -315,7 +315,7 @@ function renderCartPageFromStorage() {
                             <!-- Thông tin sản phẩm ở hàng 2 -->
                             <div class="flex flex-col p-4 sm:p-5 lg:p-6 flex-1">
                                 <!-- Tên sản phẩm -->
-                                <a href="${appUrl}/product.php?slug=${productSlug}" class="font-bold text-gray-900 hover:text-rose-500 transition-colors duration-200 block text-lg sm:text-xl lg:text-2xl leading-tight mb-3 min-h-[56px] flex items-start">
+                                <a href="${appUrl}/product.php?slug=${productSlug}" class="font-bold text-gray-900 hover:text-rose-500 transition-colors duration-200 block text-lg sm:text-xl lg:text-2xl leading-tight mb-3 flex items-start">
                                     ${productName}
                                 </a>
                                 

@@ -1,5 +1,5 @@
     <!-- Footer -->
-    <footer class="bg-white text-black mt-16 w-full">
+    <footer class="bg-white text-black w-full">
         <!-- Service Features -->
         <div class="bg-white py-8 border-b">
             <div class="container mx-auto px-4">
@@ -126,12 +126,11 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-3 footer-grid" style="width: 100%;">
                     <!-- Column 1: Logo and Contact -->
                     <div class="w-full">
-                        <div class="mb-4 flex justify-center">
-                            <img src="<?php echo IMAGES_URL; ?>/logo/logo.jpg" 
-                                 alt="Hoa Ngoc Anh Logo" 
-                                 class="h-48 w-auto object-contain">
-                        </div>
-                        <ul class="space-y-3 text-sm text-gray-700">
+                    <h4 class="font-semibold text-black mb-4 text-center flex items-center justify-center gap-2">
+                        <i class="fas fa-seedling text-rose-500"></i>
+                        <span>Hoa tươi Ngọc Anh</span>
+                    </h4>
+                    <ul class="space-y-3 text-sm text-gray-700">
                             <?php if (!empty($footerAddress)): ?>
                             <li class="flex items-start">
                                 <div class="w-10 h-10 flex items-center justify-center mr-3 flex-shrink-0">
@@ -199,7 +198,7 @@
                     <!-- Column 3: Policies -->
                     <div class="w-full policies-column">
                         <h4 class="font-semibold text-black mb-4 text-center lg:text-left">Chính sách</h4>
-                        <ul class="space-y-2 text-sm text-gray-700 policies-list" style="margin-left: 90px !important;">
+                        <ul class="space-y-2 text-sm text-gray-700 policies-list">
                             <li>
                                 <a href="#" class="hover:text-rose-500 transition flex items-start justify-start">
                                     <span class="mr-2">▶</span>
