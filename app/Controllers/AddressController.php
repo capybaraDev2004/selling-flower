@@ -19,10 +19,16 @@ class AddressController {
     }
     
     public function store() {
+        $region = $_POST['region'] ?? '';
+        $northOffice = $region === 'north' ? 1 : 0;
+        $southOffice = $region === 'south' ? 1 : 0;
+
         $data = [
             'name' => trim($_POST['name'] ?? ''),
             'address' => trim($_POST['address'] ?? ''),
             'main' => isset($_POST['main']) ? intval($_POST['main']) : 0,
+            'northOffice' => $northOffice,
+            'southOffice' => $southOffice,
             'ward' => trim($_POST['ward'] ?? ''),
             'district' => trim($_POST['district'] ?? ''),
             'city' => trim($_POST['city'] ?? ''),
@@ -47,10 +53,16 @@ class AddressController {
     }
     
     public function update($id) {
+        $region = $_POST['region'] ?? '';
+        $northOffice = $region === 'north' ? 1 : 0;
+        $southOffice = $region === 'south' ? 1 : 0;
+
         $data = [
             'name' => trim($_POST['name'] ?? ''),
             'address' => trim($_POST['address'] ?? ''),
             'main' => isset($_POST['main']) ? intval($_POST['main']) : 0,
+            'northOffice' => $northOffice,
+            'southOffice' => $southOffice,
             'ward' => trim($_POST['ward'] ?? ''),
             'district' => trim($_POST['district'] ?? ''),
             'city' => trim($_POST['city'] ?? ''),

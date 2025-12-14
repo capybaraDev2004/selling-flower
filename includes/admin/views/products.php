@@ -328,7 +328,7 @@ showToast('<?php echo addslashes($errorMessage); ?>', 'error');
             <div class="modal-header">
                 <h5 class="modal-title" id="modalTitle">Thêm Sản phẩm</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
+            </div>  
             <form method="POST" action="" id="productForm" enctype="multipart/form-data">
                 <input type="hidden" name="action" id="formAction" value="create">
                 <input type="hidden" name="id" id="formId">
@@ -466,14 +466,9 @@ showToast('<?php echo addslashes($errorMessage); ?>', 'error');
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Thuộc tính sản phẩm <span style="color: #dc3545;">*</span></label>
-                        <small class="d-block text-muted mb-2">Nhập các thuộc tính của sản phẩm (ví dụ: Màu sắc, Kích thước, Chất liệu...)</small>
-                        <div id="attributesContainer">
-                            <!-- Attributes sẽ được thêm vào đây -->
-                        </div>
-                        <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="addAttributeRow()">
-                            <i class="fas fa-plus"></i> Thêm thuộc tính
-                        </button>
+                        <label class="form-label fw-bold">Thông tin chi tiết sản phẩm <span style="color: #dc3545;">*</span></label>
+                        <textarea name="product_detail" class="form-control" id="formProductDetail" rows="6" required placeholder="Nhập mô tả chi tiết về sản phẩm..."></textarea>
+                        <small class="form-text text-muted">Mô tả chi tiết về sản phẩm sẽ được lưu tự động với tên "Thông tin chi tiết sản phẩm"</small>
                     </div>
                     <div class="row">
                         <div class="col-md-6">
@@ -504,68 +499,6 @@ const productData = <?php echo json_encode($products); ?>;
 const currentProduct = <?php echo json_encode($product ?? null); ?>;
 const allProductImages = <?php echo json_encode($allProductImages ?? []); ?>;
 const allProductAttributes = <?php echo json_encode($allProductAttributes ?? []); ?>;
-let productAttributes = <?php echo json_encode($productAttributes ?? []); ?>;
-
-// Biến đếm số lượng attributes để tạo ID unique
-let attributeIndex = 0;
-
-// Hàm thêm một dòng thuộc tính mới
-function addAttributeRow(attributeName = '', attributeValue = '') {
-    const container = document.getElementById('attributesContainer');
-    const row = document.createElement('div');
-    row.className = 'row mb-2 attribute-row';
-    row.setAttribute('data-index', attributeIndex);
-    
-    row.innerHTML = `
-        <div class="col-md-5">
-            <input type="text" 
-                   name="attributes[${attributeIndex}][attribute_name]" 
-                   class="form-control attribute-name" 
-                   placeholder="Tên thuộc tính (VD: Màu sắc)" 
-                   value="${attributeName}"
-                   required>
-        </div>
-        <div class="col-md-6">
-            <input type="text" 
-                   name="attributes[${attributeIndex}][attribute_value]" 
-                   class="form-control attribute-value" 
-                   placeholder="Giá trị (VD: Đỏ)" 
-                   value="${attributeValue}"
-                   required>
-        </div>
-        <div class="col-md-1">
-            <button type="button" class="btn btn-sm btn-danger w-100" onclick="removeAttributeRow(this)" title="Xóa">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-    `;
-    
-    container.appendChild(row);
-    attributeIndex++;
-}
-
-// Hàm xóa dòng thuộc tính
-function removeAttributeRow(button) {
-    const row = button.closest('.attribute-row');
-    row.remove();
-}
-
-// Khởi tạo attributes khi load trang
-function initAttributes() {
-    const container = document.getElementById('attributesContainer');
-    container.innerHTML = '';
-    attributeIndex = 0;
-    
-    // Nếu có attributes từ database (khi edit), load chúng
-    if (productAttributes && productAttributes.length > 0) {
-        productAttributes.forEach(attr => {
-            addAttributeRow(attr.attribute_name || '', attr.attribute_value || '');
-        });
-    } else {
-        // Nếu không có, thêm một dòng trống để người dùng nhập
-        addAttributeRow();
-    }
-}
 
 function showModal(action, id = null) {
     const modal = new bootstrap.Modal(document.getElementById('productModal'));
@@ -593,8 +526,8 @@ function showModal(action, id = null) {
         document.getElementById('formAdditionalImages').value = '';
         window.selectedFiles = [];
         document.getElementById('additionalImagesCount').style.display = 'none';
-        // Reset attributes
-        initAttributes();
+        // Reset mô tả chi tiết
+        document.getElementById('formProductDetail').value = '';
     } else if (action === 'edit' && id) {
         document.getElementById('modalTitle').textContent = 'Sửa Sản phẩm';
         formAction.value = 'edit';
@@ -602,7 +535,7 @@ function showModal(action, id = null) {
         formId.value = id;
         
         // Load attributes từ database cho sản phẩm đang edit
-        productAttributes = allProductAttributes[id] || [];
+        const productAttributes = allProductAttributes[id] || [];
         
         const product = productData.find(p => p.id == id);
         if (product) {
@@ -618,6 +551,16 @@ function showModal(action, id = null) {
             document.getElementById('formMetaTitle').value = product.meta_title || '';
             document.getElementById('formMetaDescription').value = product.meta_description || '';
             
+            // Load mô tả chi tiết từ attribute có name="Thông tin chi tiết sản phẩm"
+            const detailAttribute = productAttributes.find(attr => 
+                attr.attribute_name === 'Thông tin chi tiết sản phẩm'
+            );
+            if (detailAttribute && detailAttribute.attribute_value) {
+                document.getElementById('formProductDetail').value = detailAttribute.attribute_value;
+            } else {
+                document.getElementById('formProductDetail').value = '';
+            }
+            
             // Lấy ảnh từ database
             const productImagesData = allProductImages[id] || [];
             
@@ -626,7 +569,10 @@ function showModal(action, id = null) {
             if (primaryImage && primaryImage.image_url) {
                 const imageUrl = primaryImage.image_url;
                 const imgElement = document.getElementById('currentPrimaryImage');
-                imgElement.src = imageUrl;
+                // Thêm cache-busting parameter để tránh cache trình duyệt
+                const separator = imageUrl.indexOf('?') > -1 ? '&' : '?';
+                const finalUrl = imageUrl + separator + 't=' + new Date().getTime();
+                imgElement.src = finalUrl;
                 imgElement.onload = function() {
                     document.getElementById('currentPrimaryImageContainer').style.display = 'block';
                 };
@@ -676,19 +622,11 @@ function showModal(action, id = null) {
             document.getElementById('additionalImagesPreview').innerHTML = '';
             document.getElementById('additionalImagesCount').style.display = 'none';
             document.getElementById('additionalImagesPreviewContainer').style.display = 'none';
-            
-            // Load attributes
-            initAttributes();
         }
     }
     
     modal.show();
 }
-
-// Khởi tạo attributes khi trang load
-document.addEventListener('DOMContentLoaded', function() {
-    initAttributes();
-});
 
 // Preview ảnh chính
 document.getElementById('formPrimaryImageFile').addEventListener('change', function(e) {
@@ -826,29 +764,38 @@ function updateFileInput() {
 // Validation form trước khi submit
 document.getElementById('productForm').addEventListener('submit', function(e) {
     const formAction = document.getElementById('formAction').value;
+    const form = this;
     
     // Đảm bảo cập nhật file input cho ảnh phụ trước khi submit
     if (window.selectedFiles && window.selectedFiles.length > 0) {
         updateFileInput();
     }
     
-    // Kiểm tra attributes: phải có ít nhất một thuộc tính hợp lệ
-    const attributeRows = document.querySelectorAll('.attribute-row');
-    let hasValidAttribute = false;
-    
-    attributeRows.forEach(row => {
-        const nameInput = row.querySelector('.attribute-name');
-        const valueInput = row.querySelector('.attribute-value');
-        if (nameInput.value.trim() && valueInput.value.trim()) {
-            hasValidAttribute = true;
-        }
-    });
-    
-    if (!hasValidAttribute) {
+    // Kiểm tra mô tả chi tiết
+    const productDetail = document.getElementById('formProductDetail').value.trim();
+    if (!productDetail) {
         e.preventDefault();
-        alert('Vui lòng nhập ít nhất một thuộc tính sản phẩm (tên thuộc tính và giá trị).');
+        alert('Vui lòng nhập mô tả chi tiết sản phẩm.');
         return false;
     }
+    
+    // Tự động tạo attribute với name="Thông tin chi tiết sản phẩm" trước khi submit
+    // Xóa các input hidden cũ nếu có
+    const oldAttributeInputs = form.querySelectorAll('input[name^="attributes"]');
+    oldAttributeInputs.forEach(input => input.remove());
+    
+    // Tạo input hidden cho attribute
+    const attributeNameInput = document.createElement('input');
+    attributeNameInput.type = 'hidden';
+    attributeNameInput.name = 'attributes[0][attribute_name]';
+    attributeNameInput.value = 'Thông tin chi tiết sản phẩm';
+    form.appendChild(attributeNameInput);
+    
+    const attributeValueInput = document.createElement('input');
+    attributeValueInput.type = 'hidden';
+    attributeValueInput.name = 'attributes[0][attribute_value]';
+    attributeValueInput.value = productDetail;
+    form.appendChild(attributeValueInput);
     
     // Chỉ validate khi tạo mới (không validate khi edit vì có thể giữ nguyên ảnh cũ)
     if (formAction === 'create') {

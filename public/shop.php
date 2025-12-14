@@ -77,6 +77,7 @@ foreach ($products_raw as $product) {
         $mainImage = IMAGES_URL . '/products/' . $mainImage;
     }
     
+    $ratingCount = intval($product['rating_count']);
     $products[] = [
         'id' => $product['id'],
         'name' => $product['name'],
@@ -84,8 +85,8 @@ foreach ($products_raw as $product) {
         'image' => $mainImage,
         'price' => floatval($product['price']),
         'sale_price' => $product['sale_price'] ? floatval($product['sale_price']) : null,
-        'rating' => floatval($product['rating_avg']),
-        'reviews' => intval($product['rating_count']),
+        'rating' => $ratingCount > 0 ? floatval($product['rating_avg']) : 0,
+        'reviews' => $ratingCount,
         'sold' => intval($product['sold_count']),
         'category' => $product['category_name']
     ];

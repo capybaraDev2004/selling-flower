@@ -15,8 +15,11 @@ $action = $_GET['action'] ?? '';
 $id = $_GET['id'] ?? null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if ($action === 'edit' && $id) {
+    if ($action === 'create') {
         $data = [
+            'product_id' => intval($_POST['product_id'] ?? 0),
+            'user_id' => null,
+            'order_id' => null,
             'rating' => intval($_POST['rating'] ?? 5),
             'comment' => trim($_POST['comment'] ?? ''),
             'customer_name' => trim($_POST['customer_name'] ?? ''),
@@ -25,6 +28,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ];
         
         // Validate
+        if (empty($data['product_id']) || $data['product_id'] <= 0) {
+            header('Location: ' . APP_URL . '/admin/reviews.php?error=' . urlencode('Vui lòng chọn sản phẩm'));
+            exit;
+        }
+        
+        if (empty($data['customer_name'])) {
+            header('Location: ' . APP_URL . '/admin/reviews.php?error=' . urlencode('Tên khách hàng không được để trống'));
+            exit;
+        }
+        
+        if ($data['rating'] < 1 || $data['rating'] > 5) {
+            header('Location: ' . APP_URL . '/admin/reviews.php?error=' . urlencode('Đánh giá phải từ 1 đến 5 sao'));
+            exit;
+        }
+        
+        $result = $reviewModel->create($data);
+        if ($result) {
+            header('Location: ' . APP_URL . '/admin/reviews.php?success=1&message=' . urlencode('Thêm đánh giá thành công!'));
+        } else {
+            header('Location: ' . APP_URL . '/admin/reviews.php?error=' . urlencode('Có lỗi xảy ra khi thêm đánh giá'));
+        }
+        exit;
+    }
+    
+    if ($action === 'edit' && $id) {
+        $data = [
+            'product_id' => intval($_POST['product_id'] ?? 0),
+            'rating' => intval($_POST['rating'] ?? 5),
+            'comment' => trim($_POST['comment'] ?? ''),
+            'customer_name' => trim($_POST['customer_name'] ?? ''),
+            'status' => $_POST['status'] ?? 'pending',
+            'main' => isset($_POST['main']) ? 1 : 0
+        ];
+        
+        // Validate
+        if (empty($data['product_id']) || $data['product_id'] <= 0) {
+            header('Location: ' . APP_URL . '/admin/reviews.php?action=edit&id=' . $id . '&error=' . urlencode('Vui lòng chọn sản phẩm'));
+            exit;
+        }
+        
         if (empty($data['customer_name'])) {
             header('Location: ' . APP_URL . '/admin/reviews.php?action=edit&id=' . $id . '&error=' . urlencode('Tên khách hàng không được để trống'));
             exit;

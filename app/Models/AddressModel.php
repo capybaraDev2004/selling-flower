@@ -43,11 +43,14 @@ class AddressModel {
         // Kiểm tra và lấy main từ data, mặc định là 0 nếu không có
         $main = isset($data['main']) ? intval($data['main']) : 0;
         
-        $stmt = $this->db->prepare("INSERT INTO addresses (name, address, main, ward, district, city, phone, email, map_url, latitude, longitude, type, display_order, status, note) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL, ?, ?, ?, ?)");
-        $stmt->bind_param("ssisssssssiss",
+        $stmt = $this->db->prepare("INSERT INTO addresses (name, address, main, northOffice, southOffice, ward, district, city, phone, email, map_url, latitude, longitude, type, display_order, status, note) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL, ?, ?, ?, ?)");
+        // name, address, main, northOffice, southOffice, ward, district, city, phone, email, map_url, type, display_order, status, note
+        $stmt->bind_param("ssiiisssssssiss",
             $data['name'],           // s
             $data['address'],        // s
             $main,                   // i (main)
+            $data['northOffice'],    // i
+            $data['southOffice'],    // i
             $data['ward'],           // s
             $data['district'],       // s
             $data['city'],           // s
@@ -66,11 +69,14 @@ class AddressModel {
         // Kiểm tra và lấy main từ data, mặc định là 0 nếu không có
         $main = isset($data['main']) ? intval($data['main']) : 0;
         
-        $stmt = $this->db->prepare("UPDATE addresses SET name = ?, address = ?, main = ?, ward = ?, district = ?, city = ?, phone = ?, email = ?, map_url = ?, latitude = NULL, longitude = NULL, type = ?, display_order = ?, status = ?, note = ? WHERE id = ?");
-        $stmt->bind_param("ssisssssssissi",
+        $stmt = $this->db->prepare("UPDATE addresses SET name = ?, address = ?, main = ?, northOffice = ?, southOffice = ?, ward = ?, district = ?, city = ?, phone = ?, email = ?, map_url = ?, latitude = NULL, longitude = NULL, type = ?, display_order = ?, status = ?, note = ? WHERE id = ?");
+        // name, address, main, northOffice, southOffice, ward, district, city, phone, email, map_url, type, display_order, status, note, id
+        $stmt->bind_param("ssiiisssssssissi",
             $data['name'],           // s
             $data['address'],        // s
             $main,                   // i (main)
+            $data['northOffice'],    // i
+            $data['southOffice'],    // i
             $data['ward'],           // s
             $data['district'],       // s
             $data['city'],           // s
@@ -100,6 +106,68 @@ class AddressModel {
         $stmt->execute();
         $result = $stmt->get_result();
         return $result->fetch_assoc();
+    }
+
+    /**
+     * Lấy danh sách địa chỉ theo type, ưu tiên status active
+     */
+    public function getActiveByType($type, $limit = null) {
+        $sql = "SELECT * FROM addresses WHERE type = ? AND status = 'active' ORDER BY display_order ASC, id DESC";
+        if ($limit !== null) {
+            $sql .= " LIMIT ?";
+        }
+
+        $stmt = $this->db->prepare($sql);
+        if ($limit !== null) {
+            $stmt->bind_param("si", $type, $limit);
+        } else {
+            $stmt->bind_param("s", $type);
+        }
+
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        $addresses = [];
+        while ($row = $result->fetch_assoc()) {
+            $addresses[] = $row;
+        }
+        return $addresses;
+    }
+
+    /**
+     * Lấy văn phòng miền Bắc (northOffice = 1)
+     */
+    public function getNorthOffice() {
+        $stmt = $this->db->prepare("SELECT * FROM addresses WHERE northOffice = 1 AND status = 'active' ORDER BY display_order ASC, id DESC LIMIT 1");
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $result->fetch_assoc();
+    }
+
+    /**
+     * Lấy văn phòng miền Nam (southOffice = 1)
+     */
+    public function getSouthOffice() {
+        $stmt = $this->db->prepare("SELECT * FROM addresses WHERE southOffice = 1 AND status = 'active' ORDER BY display_order ASC, id DESC LIMIT 1");
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $result->fetch_assoc();
+    }
+
+    /**
+     * Lấy danh sách shop (type = 'shop')
+     */
+    public function getShops($limit = 10) {
+        $stmt = $this->db->prepare("SELECT * FROM addresses WHERE type = 'shop' AND status = 'active' ORDER BY display_order ASC, id DESC LIMIT ?");
+        $stmt->bind_param("i", $limit);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        $addresses = [];
+        while ($row = $result->fetch_assoc()) {
+            $addresses[] = $row;
+        }
+        return $addresses;
     }
 }
 

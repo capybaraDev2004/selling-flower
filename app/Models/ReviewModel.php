@@ -165,13 +165,14 @@ class ReviewModel {
      * @return bool
      */
     public function update($id, $data) {
-        $sql = "UPDATE reviews SET rating = ?, comment = ?, customer_name = ?, status = ?, main = ? WHERE id = ?";
+        $sql = "UPDATE reviews SET product_id = ?, rating = ?, comment = ?, customer_name = ?, status = ?, main = ? WHERE id = ?";
         $stmt = $this->db->prepare($sql);
         if (!$stmt) {
             return false;
         }
         $stmt->bind_param(
-            "isssii",
+            "iisssii",
+            $data['product_id'],
             $data['rating'],
             $data['comment'],
             $data['customer_name'],

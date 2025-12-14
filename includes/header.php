@@ -39,9 +39,7 @@
                 <!-- Logo - Bên trái -->
                 <div class="header-logo flex-shrink-0">
                     <a href="<?php echo APP_URL; ?>" class="flex items-center">
-                        <img src="<?php echo IMAGES_URL; ?>/logo/logo.jpg" 
-                             alt="Hoa Ngoc Anh Logo" 
-                             class="header-logo-img object-contain hover:opacity-90 transition-opacity">
+                        <div class="header-logo-placeholder" style="width: 88px; height: 88px;"></div>
                     </a>
                 </div>
 
@@ -63,7 +61,7 @@
                             <!-- Tagline -->
                             <p class="header-title-tagline text-xs md:text-sm lg:text-base text-rose-500/90 font-medium mt-1 tracking-wide">
                                 <i class="fas fa-heart text-rose-400 text-[0.65em] mr-1.5"></i>
-                                <span>Hoa đẹp khởi nguồn cảm xúc</span>
+                                <span>HOA ĐẸP KHỞI NGUỒN CẢM XÚC</span>
                                 <i class="fas fa-heart text-rose-400 text-[0.65em] ml-1.5"></i>
                             </p>
                             

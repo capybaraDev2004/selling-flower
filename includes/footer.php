@@ -1,3 +1,101 @@
+<?php
+// Chuẩn bị dữ liệu địa chỉ trước khi render footer
+$mainAddress = null;
+$mapEmbedUrl = '';
+$northOffice = null;
+$southOffice = null;
+$shopAddresses = [];
+
+if (defined('BASE_PATH')) {
+    if (!class_exists('Database')) {
+        require_once BASE_PATH . '/app/Database/Database.php';
+    }
+    if (!class_exists('AddressModel')) {
+        require_once BASE_PATH . '/app/Models/AddressModel.php';
+    }
+    
+    try {
+        $addressModel = new AddressModel();
+        /** @var array|null $mainAddress */
+        $mainAddress = $addressModel->getMain();
+
+        // Lấy văn phòng và shop
+        $northOffice = $addressModel->getNorthOffice();
+        $southOffice = $addressModel->getSouthOffice();
+        $shopAddresses = $addressModel->getShops(10);
+        
+        if ($mainAddress) {
+            // Xử lý URL Google Maps embed
+            if (!empty($mainAddress['map_url'])) {
+                $mapUrl = trim($mainAddress['map_url']);
+                
+                if (strpos($mapUrl, '/maps/embed') !== false || strpos($mapUrl, 'output=embed') !== false) {
+                    $mapEmbedUrl = $mapUrl;
+                } elseif (strpos($mapUrl, 'google.com/maps') !== false || strpos($mapUrl, 'maps.google.com') !== false) {
+                    if (preg_match('/([0-9.-]+),([0-9.-]+)/', $mapUrl, $coords)) {
+                        $lat = floatval($coords[1]);
+                        $lng = floatval($coords[2]);
+                        $mapEmbedUrl = "https://www.google.com/maps?q={$lat},{$lng}&hl=vi&z=14&output=embed";
+                    } elseif (preg_match('/place\/([^\/\?]+)/', $mapUrl, $matches)) {
+                        $placeId = urlencode($matches[1]);
+                        $mapEmbedUrl = "https://www.google.com/maps/embed/v1/place?key=&q=place_id:{$placeId}&hl=vi";
+                    } else {
+                        $separator = strpos($mapUrl, '?') !== false ? '&' : '?';
+                        $mapEmbedUrl = $mapUrl . $separator . 'output=embed';
+                    }
+                }
+            }
+            
+            if (empty($mapEmbedUrl) && !empty($mainAddress['latitude']) && !empty($mainAddress['longitude'])) {
+                $lat = floatval($mainAddress['latitude']);
+                $lng = floatval($mainAddress['longitude']);
+                $mapEmbedUrl = "https://www.google.com/maps?q={$lat},{$lng}&hl=vi&z=14&output=embed";
+            }
+            
+            if (empty($mapEmbedUrl) && !empty($mainAddress['address'])) {
+                $addressQuery = urlencode($mainAddress['address']);
+                $mapEmbedUrl = "https://www.google.com/maps?q={$addressQuery}&hl=vi&z=14&output=embed";
+            }
+            
+            if (!empty($mapEmbedUrl)) {
+                if (strpos($mapEmbedUrl, 'output=embed') === false && strpos($mapEmbedUrl, '/maps/embed') === false) {
+                    $separator = strpos($mapEmbedUrl, '?') !== false ? '&' : '?';
+                    $mapEmbedUrl = $mapEmbedUrl . $separator . 'output=embed';
+                }
+            }
+        }
+    } catch (Exception $e) {
+        // fallback nếu lỗi
+    }
+}
+
+// Fallback về constants nếu không có dữ liệu từ database
+$footerAddress = $mainAddress ? $mainAddress['address'] : (defined('CONTACT_ADDRESS_HN') ? CONTACT_ADDRESS_HN : '');
+$footerEmail = $mainAddress ? $mainAddress['email'] : (defined('CONTACT_EMAIL') ? CONTACT_EMAIL : '');
+$footerPhone = $mainAddress ? $mainAddress['phone'] : (defined('CONTACT_PHONE_HN') ? CONTACT_PHONE_HN : '');
+
+// Helper format địa chỉ đầy đủ
+$formatAddress = function ($item) {
+    if (!$item) {
+        return '';
+    }
+    $parts = [];
+    if (!empty($item['address'])) {
+        $parts[] = $item['address'];
+    }
+    if (!empty($item['ward'])) {
+        $parts[] = $item['ward'];
+    }
+    if (!empty($item['district'])) {
+        $parts[] = $item['district'];
+    }
+    if (!empty($item['city'])) {
+        $parts[] = $item['city'];
+    }
+    return implode(', ', array_filter($parts));
+};
+?>
+
     <!-- Footer -->
     <footer class="bg-white text-black w-full">
         <!-- Service Features -->
@@ -39,102 +137,75 @@
             </div>
         </div>
 
+        <!-- Office & Shop Addresses -->
+        <div class="bg-white py-10 border-b">
+            <div class="container mx-auto px-4">
+                <h3 class="text-lg font-semibold mb-8 text-center">Hệ thống văn phòng & shop Hoa Ngọc Anh</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 text-sm text-gray-800">
+                    <div>
+                        <h4 class="text-teal-700 font-semibold mb-3">Văn phòng điều hành khu vực miền Bắc</h4>
+                        <?php if ($northOffice): ?>
+                            <p><span class="font-semibold">Địa chỉ:</span> <?php echo htmlspecialchars($formatAddress($northOffice)); ?></p>
+                            <?php if (!empty($northOffice['phone'])): ?>
+                                <p class="mt-1"><span class="font-semibold">Điện thoại:</span> <?php echo htmlspecialchars($northOffice['phone']); ?></p>
+                            <?php endif; ?>
+                            <?php if (!empty($northOffice['note'])): ?>
+                                <p class="mt-3 text-gray-700"><?php echo htmlspecialchars($northOffice['note']); ?></p>
+                            <?php endif; ?>
+                        <?php else: ?>
+                            <p class="text-gray-600">Đang cập nhật văn phòng miền Bắc.</p>
+                        <?php endif; ?>
+                    </div>
+                    <div>
+                        <h4 class="text-teal-700 font-semibold mb-3">Văn phòng điều hành khu vực miền Nam</h4>
+                        <?php if ($southOffice): ?>
+                            <p><span class="font-semibold">Địa chỉ:</span> <?php echo htmlspecialchars($formatAddress($southOffice)); ?></p>
+                            <?php if (!empty($southOffice['phone'])): ?>
+                                <p class="mt-1"><span class="font-semibold">Điện thoại:</span> <?php echo htmlspecialchars($southOffice['phone']); ?></p>
+                            <?php endif; ?>
+                            <?php if (!empty($southOffice['note'])): ?>
+                                <p class="mt-3 text-gray-700"><?php echo htmlspecialchars($southOffice['note']); ?></p>
+                            <?php endif; ?>
+                        <?php else: ?>
+                            <p class="text-gray-600">Đang cập nhật văn phòng miền Nam.</p>
+                        <?php endif; ?>
+                    </div>
+                    <div class="lg:col-span-2">
+                        <h4 class="text-teal-700 font-semibold mb-3">Hệ thống shop hoa toàn quốc</h4>
+                        <?php if (!empty($shopAddresses)): ?>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <?php foreach ($shopAddresses as $index => $shop): ?>
+                                    <div class="space-y-1">
+                                        <p>
+                                            <span class="font-semibold"><?php echo 'Shop ' . ($index + 1); ?>:</span>
+                                            <?php echo htmlspecialchars($formatAddress($shop)); ?>
+                                        </p>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php else: ?>
+                            <p class="text-gray-600">Đang cập nhật danh sách shop.</p>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Main Footer -->
-        <?php
-        // Lấy thông tin địa chỉ chính từ database
-        $mainAddress = null;
-        $mapEmbedUrl = '';
-        
-        if (defined('BASE_PATH')) {
-            if (!class_exists('Database')) {
-                require_once BASE_PATH . '/app/Database/Database.php';
-            }
-            if (!class_exists('AddressModel')) {
-                require_once BASE_PATH . '/app/Models/AddressModel.php';
-            }
-            
-            try {
-                $addressModel = new AddressModel();
-                $mainAddress = $addressModel->getMain();
-                
-                if ($mainAddress) {
-                    // Xử lý URL Google Maps embed
-                    // Ưu tiên 1: Kiểm tra nếu map_url đã là embed URL hợp lệ
-                    if (!empty($mainAddress['map_url'])) {
-                        $mapUrl = trim($mainAddress['map_url']);
-                        
-                        // Nếu đã là embed URL (có chứa /embed hoặc output=embed)
-                        if (strpos($mapUrl, '/maps/embed') !== false || strpos($mapUrl, 'output=embed') !== false) {
-                            $mapEmbedUrl = $mapUrl;
-                        }
-                        // Nếu là URL Google Maps thông thường, chuyển đổi sang embed
-                        elseif (strpos($mapUrl, 'google.com/maps') !== false || strpos($mapUrl, 'maps.google.com') !== false) {
-                            // Extract coordinates nếu có trong URL
-                            if (preg_match('/([0-9.-]+),([0-9.-]+)/', $mapUrl, $coords)) {
-                                $lat = floatval($coords[1]);
-                                $lng = floatval($coords[2]);
-                                $mapEmbedUrl = "https://www.google.com/maps?q={$lat},{$lng}&hl=vi&z=14&output=embed";
-                            }
-                            // Extract place ID nếu có
-                            elseif (preg_match('/place\/([^\/\?]+)/', $mapUrl, $matches)) {
-                                $placeId = urlencode($matches[1]);
-                                $mapEmbedUrl = "https://www.google.com/maps/embed/v1/place?key=&q=place_id:{$placeId}&hl=vi";
-                            }
-                            // Nếu không extract được, thử chuyển đổi URL
-                            else {
-                                // Thêm output=embed vào URL
-                                $separator = strpos($mapUrl, '?') !== false ? '&' : '?';
-                                $mapEmbedUrl = $mapUrl . $separator . 'output=embed';
-                            }
-                        }
-                    }
-                    
-                    // Ưu tiên 2: Nếu không có map_url hợp lệ nhưng có latitude và longitude
-                    if (empty($mapEmbedUrl) && !empty($mainAddress['latitude']) && !empty($mainAddress['longitude'])) {
-                        $lat = floatval($mainAddress['latitude']);
-                        $lng = floatval($mainAddress['longitude']);
-                        $mapEmbedUrl = "https://www.google.com/maps?q={$lat},{$lng}&hl=vi&z=14&output=embed";
-                    }
-                    
-                    // Ưu tiên 3: Nếu có địa chỉ, tạo embed từ địa chỉ
-                    if (empty($mapEmbedUrl) && !empty($mainAddress['address'])) {
-                        $addressQuery = urlencode($mainAddress['address']);
-                        $mapEmbedUrl = "https://www.google.com/maps?q={$addressQuery}&hl=vi&z=14&output=embed";
-                    }
-                    
-                    // Đảm bảo URL là embed URL hợp lệ
-                    if (!empty($mapEmbedUrl)) {
-                        if (strpos($mapEmbedUrl, 'output=embed') === false && strpos($mapEmbedUrl, '/maps/embed') === false) {
-                            $separator = strpos($mapEmbedUrl, '?') !== false ? '&' : '?';
-                            $mapEmbedUrl = $mapEmbedUrl . $separator . 'output=embed';
-                        }
-                    }
-                }
-            } catch (Exception $e) {
-                // Fallback về constants nếu có lỗi
-            }
-        }
-        
-        // Fallback về constants nếu không có dữ liệu từ database
-        $footerAddress = $mainAddress ? $mainAddress['address'] : (defined('CONTACT_ADDRESS_HN') ? CONTACT_ADDRESS_HN : '');
-        $footerEmail = $mainAddress ? $mainAddress['email'] : (defined('CONTACT_EMAIL') ? CONTACT_EMAIL : '');
-        $footerPhone = $mainAddress ? $mainAddress['phone'] : (defined('CONTACT_PHONE_HN') ? CONTACT_PHONE_HN : '');
-        ?>
         
         <div class="w-full py-12 border-t footer-main-content" style="padding-bottom: 0 !important;">
             <div class="container mx-auto px-2 max-w-full">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-3 footer-grid" style="width: 100%;">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4 lg:gap-6 footer-grid" style="width: 100%;">
                     <!-- Column 1: Logo and Contact -->
-                    <div class="w-full">
-                    <h4 class="font-semibold text-black mb-4 text-center flex items-center justify-center gap-2">
-                        <i class="fas fa-seedling text-rose-500"></i>
-                        <span>Hoa tươi Ngọc Anh</span>
+                    <div class="w-full contact-column">
+                    <h4 class="font-semibold text-black mb-4 text-center flex items-center pl-2 gap-2">
+                        <span>ĐIỆN HOA NGỌC ANH</span>
                     </h4>
                     <ul class="space-y-3 text-sm text-gray-700">
                             <?php if (!empty($footerAddress)): ?>
                             <li class="flex items-start" style="align-items: center !important;">
                                 <div class="w-10 h-10 flex items-center justify-center mr-3 flex-shrink-0">
-                                    <i class="fas fa-map-marker-alt text-gray-500 text-lg"></i>
+                                    <i class="fas fa-map-marker-alt text-rose-500 text-lg"></i>
                                 </div>
                                 <span class="break-words"><?php echo htmlspecialchars($footerAddress); ?></span>
                             </li>
@@ -143,7 +214,7 @@
                             <?php if (!empty($footerEmail)): ?>
                             <li class="flex items-center">
                                 <div class="w-10 h-10 flex items-center justify-center mr-3 flex-shrink-0">
-                                    <i class="fas fa-envelope text-gray-500 text-lg"></i>
+                                    <i class="fas fa-envelope text-rose-500 text-lg"></i>
                                 </div>
                                 <a href="mailto:<?php echo htmlspecialchars($footerEmail); ?>" class="hover:text-rose-500 break-all">
                                     <?php echo htmlspecialchars($footerEmail); ?>
@@ -154,7 +225,7 @@
                             <?php if (!empty($footerPhone)): ?>
                             <li class="flex items-center">
                                 <div class="w-10 h-10 flex items-center justify-center mr-3 flex-shrink-0">
-                                    <i class="fas fa-phone text-gray-500 text-lg"></i>
+                                    <i class="fas fa-phone text-rose-500 text-lg"></i>
                                 </div>
                                 <a href="tel:<?php echo str_replace([' ', '-', '(', ')'], '', $footerPhone); ?>" class="hover:text-rose-500">
                                     <?php echo htmlspecialchars($footerPhone); ?>
@@ -166,7 +237,7 @@
 
                     <!-- Column 2: Description and Fanpage -->
                     <div class="w-full">
-                        <h4 class="font-semibold text-black mb-4 text-center">Hoa Ngoc Anh Floral & Gifts | Hoa và Quà tặng ý nghĩa!</h4>
+                        <h4 class="font-semibold text-black mb-4">Hoa Ngoc Anh Floral & Gifts | Hoa và Quà tặng ý nghĩa!</h4>
                         <p class="text-sm text-gray-700 mb-6 leading-relaxed">
                             Dịch vụ đặt hoa Online chất lượng, giá hợp lý, sáng tạo mẫu riêng theo nhu cầu của bạn. 
                             Mỗi ngày chúng tôi mang đến những sản phẩm hoa tươi làm đẹp cuộc sống và thay bạn trao gửi thương yêu đến cho người nhận.
@@ -174,7 +245,7 @@
                         
                         <!-- Fanpage -->
                         <div>
-                            <h4 class="font-semibold text-black mb-2 text-center">FANPAGE</h4>
+                            <h4 class="font-semibold text-black mb-2">FANPAGE</h4>
                             <div class="bg-gray-50 p-4 rounded border border-gray-200">
                                 <div class="flex items-center justify-between mb-2">
                                     <div class="flex items-center gap-2">
@@ -197,7 +268,7 @@
 
                     <!-- Column 3: Policies -->
                     <div class="w-full policies-column">
-                        <h4 class="font-semibold text-black mb-4 text-center lg:text-left">Chính sách</h4>
+                        <h4 class="font-semibold text-black mb-4 lg:text-left">Chính sách shop Hoa Ngọc Anh</h4>
                         <ul class="space-y-2 text-sm text-gray-700 policies-list">
                             <li>
                                 <a href="#" class="hover:text-rose-500 transition flex items-start justify-start">
@@ -229,7 +300,7 @@
                     <!-- Column 4: Google Map -->
                     <div class="w-full">
                         <?php if (!empty($mapEmbedUrl)): ?>
-                            <h4 class="font-semibold text-black mb-4 text-center">Bản Đồ</h4>
+                            <h4 class="font-semibold text-black mb-4">Google Maps – Vị trí cửa hàng</h4>
                             <div class="w-full h-64 rounded-lg overflow-hidden border border-gray-200 shadow-sm">
                                 <iframe 
                                     src="<?php echo htmlspecialchars($mapEmbedUrl); ?>" 
@@ -244,7 +315,7 @@
                             </div>
                             
                         <?php else: ?>
-                            <h4 class="font-semibold text-black mb-4 text-center">Bản Đồ</h4>
+                            <h4 class="font-semibold text-black mb-4">Bản Đồ</h4>
                             <div class="w-full h-64 rounded-lg overflow-hidden border border-gray-200 shadow-sm bg-gray-100 flex items-center justify-center">
                                 <p class="text-gray-500 text-sm">Bản đồ đang được cập nhật</p>
                             </div>

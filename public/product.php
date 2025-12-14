@@ -37,6 +37,11 @@ function normalizeProductImageUrl($url) {
 // Lấy sản phẩm theo slug
 $productData = $productModel->findDetailBySlug($product_slug, 'active');
 if (!$productData) {
+    header("Location: ./index.php");
+    exit;
+}
+
+if (!$productData) {
     $page_title = 'Sản phẩm không tồn tại - ' . APP_NAME;
     $page_description = 'Sản phẩm bạn tìm không tồn tại.';
     $product = null;
@@ -62,21 +67,11 @@ if (!$productData) {
     $attributesRaw = $productAttributeModel->getByProductId($productData['id']);
     $details = [];
     foreach ($attributesRaw as $attr) {
+        // Bỏ qua các attribute "Danh mục" và "SKU" - không hiển thị
+        if ($attr['attribute_name'] === 'Danh mục' || $attr['attribute_name'] === 'SKU') {
+            continue;
+        }
         $details[$attr['attribute_name']] = $attr['attribute_value'];
-    }
-    // Thêm thông tin cơ bản nếu chưa có thuộc tính
-    if (empty($details)) {
-        $details['Danh mục'] = $productData['category_name'];
-        $details['SKU'] = $productData['sku'];
-        $details['Tồn kho'] = $productData['stock_quantity'] . ' sản phẩm';
-    } else {
-        // Đảm bảo có thông tin cơ bản
-        if (!isset($details['Danh mục'])) {
-            $details['Danh mục'] = $productData['category_name'];
-        }
-        if (!isset($details['SKU'])) {
-            $details['SKU'] = $productData['sku'];
-        }
     }
     
     // Sử dụng rating từ database nếu có đánh giá, nếu không thì dùng giá trị mặc định
@@ -155,21 +150,22 @@ include '../includes/header.php';
                 <!-- Product Images -->
                 <div>
                     <!-- Main Image -->
-                    <div class="mb-4 rounded-xl overflow-hidden border-2 border-gray-200 aspect-square bg-white">
+                    <div class="mb-4 rounded-xl overflow-hidden border-2 border-gray-200 bg-white flex items-center justify-center cursor-zoom-in" style="min-height: 400px;" onclick="openImageZoom(document.getElementById('main-image').src)">
                         <img id="main-image" 
                              src="<?php echo $product['images'][0]; ?>" 
                              alt="<?php echo htmlspecialchars($product['name']); ?>"
-                             class="w-full h-full object-cover">
+                             class="w-full h-auto object-contain">
                     </div>
                     
-                    <!-- Thumbnail Images -->
+                    <!-- Thumnail Images -->
                     <div class="grid grid-cols-4 gap-3">
                         <?php foreach ($product['images'] as $index => $image): ?>
-                            <div class="rounded-lg overflow-hidden border-2 border-gray-200 cursor-pointer hover:border-rose-500 transition aspect-square bg-white"
+                            <div class="rounded-lg overflow-hidden border-2 border-gray-200 cursor-pointer hover:border-rose-500 transition aspect-square bg-white flex items-center justify-center"
                                  onclick="changeMainImage('<?php echo $image; ?>')">
                                 <img src="<?php echo $image; ?>" 
                                      alt="Hình <?php echo $index + 1; ?>"
-                                     class="w-full h-full object-cover">
+                                     class="w-full h-full object-contain p-1 cursor-zoom-in"
+                                     onclick="event.stopPropagation(); openImageZoom('<?php echo $image; ?>')">
                             </div>
                         <?php endforeach; ?>
                     </div>
@@ -254,8 +250,8 @@ include '../includes/header.php';
                     </div>
 
                     <!-- Description -->
-                    <div class="mb-6">
-                        <p class="text-gray-700 leading-relaxed"><?php echo $product['description']; ?></p>
+                    <div class="mb-6 product-description">
+                        <div class="text-gray-700 leading-relaxed"><?php echo $product['description']; ?></div>
                     </div>
 
                     <!-- Quantity -->
@@ -284,7 +280,13 @@ include '../includes/header.php';
                     </div>
 
                     <!-- Action Buttons -->
-                    <div class="flex flex-col items-center gap-4 mb-6">
+                    <div class="flex flex-col items-center gap-4 mb-6 w-full">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 w-full">
+                            <button onclick="buyNow(<?php echo $product['id']; ?>)"
+                                class="w-full bg-white text-rose-600 border-2 border-rose-500 py-4 rounded-xl font-bold text-lg hover:bg-rose-50 transition-all hover:-translate-y-1">
+                                <i class="fas fa-bolt mr-2"></i>
+                                Mua ngay
+                            </button>
                         <button onclick="addToCart(<?php echo $product['id']; ?>, document.getElementById('quantity').value, {
                             name: '<?php echo addslashes($product['name']); ?>', 
                             slug: '<?php echo $product['slug']; ?>', 
@@ -295,10 +297,11 @@ include '../includes/header.php';
                             reviews: <?php echo isset($product['reviews']) ? $product['reviews'] : 0; ?>,
                             sold: <?php echo isset($product['sold']) ? $product['sold'] : 0; ?>
                         })" 
-                                class="w-full md:w-2/3 bg-gradient-to-r from-rose-500 to-pink-500 text-white py-4 rounded-xl font-bold text-lg hover:shadow-lg transition-all hover:-translate-y-1">
+                                    class="w-full bg-gradient-to-r from-rose-500 to-pink-500 text-white py-4 rounded-xl font-bold text-lg hover:shadow-lg transition-all hover:-translate-y-1">
                             <i class="fas fa-shopping-cart mr-2"></i>
                             Thêm vào giỏ
                         </button>
+                        </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                             <a href="https://zalo.me/0389932688" target="_blank"
                                class="text-center bg-blue-500 text-white py-4 rounded-xl font-bold text-lg hover:shadow-lg transition-all hover:-translate-y-1">
@@ -334,25 +337,30 @@ include '../includes/header.php';
         <div class="bg-white rounded-xl shadow-sm overflow-hidden">
             <div class="border-b">
                 <div class="flex">
-                    <button class="tab-btn active px-6 py-4 font-semibold" onclick="showTab('details')">
-                        Thông tin chi tiết
+                    <button class="tab-btn active px-6 py-4 font-semibold text-rose-500 border-b-2 border-rose-500" onclick="showTab('details', this)">
+                        Mô tả
                     </button>
-                    <button class="tab-btn px-6 py-4 font-semibold" onclick="showTab('reviews')">
+                    <button class="tab-btn px-6 py-4 font-semibold" onclick="showTab('reviews', this)">
                         Đánh giá (<?php echo $product['reviews']; ?>)
                     </button>
                 </div>
             </div>
 
             <div id="tab-details" class="tab-content p-6">
-                <h3 class="text-xl font-bold mb-4">Thông tin sản phẩm</h3>
-                <table class="w-full">
-                    <?php foreach ($product['details'] as $key => $value): ?>
-                        <tr class="border-b">
-                            <td class="py-3 font-semibold w-1/3"><?php echo $key; ?></td>
-                            <td class="py-3 text-gray-700"><?php echo $value; ?></td>
-                        </tr>
+                <?php if (!empty($product['details'])): ?>
+                    <div class="space-y-2 text-gray-700 leading-relaxed">
+                        <?php foreach ($product['details'] as $value): ?>
+                            <?php 
+                                $normalized = preg_replace('/(\r?\n){2,}/', "\n", $value);
+                                // Giữ lại thẻ nhấn mạnh cơ bản, tránh script
+                                $safeHtml = strip_tags($normalized, '<strong><b><em><i><u><br><p><ul><ol><li>');
+                            ?>
+                            <div class="whitespace-pre-wrap"><?php echo nl2br($safeHtml); ?></div>
                     <?php endforeach; ?>
-                </table>
+                    </div>
+                <?php else: ?>
+                    <p class="text-gray-500">Chưa có thông tin sản phẩm.</p>
+                <?php endif; ?>
             </div>
 
             <div id="tab-reviews" class="tab-content p-6 hidden">
@@ -467,6 +475,19 @@ include '../includes/header.php';
 </section>
 
 <script>
+// Dữ liệu sản phẩm phục vụ "Mua ngay" tách biệt giỏ hàng
+const productPayload = {
+    id: <?php echo (int) $product['id']; ?>,
+    name: "<?php echo addslashes($product['name']); ?>",
+    slug: "<?php echo addslashes($product['slug']); ?>",
+    image: "<?php echo addslashes($product['images'][0] ?? (IMAGES_URL . '/products/default.jpg')); ?>",
+    price: <?php echo floatval($product['price']); ?>,
+    sale_price: <?php echo $product['sale_price'] ? floatval($product['sale_price']) : 'null'; ?>,
+    rating: <?php echo isset($product['rating']) ? floatval($product['rating']) : 'null'; ?>,
+    reviews: <?php echo isset($product['reviews']) ? intval($product['reviews']) : 'null'; ?>,
+    sold: <?php echo isset($product['sold']) ? intval($product['sold']) : 'null'; ?>
+};
+
 function changeMainImage(imageSrc) {
     document.getElementById('main-image').src = imageSrc;
 }
@@ -487,12 +508,38 @@ function increaseQuantity() {
 }
 
 function buyNow(productId) {
-    const quantity = document.getElementById('quantity').value;
-    addToCart(productId, quantity);
-    window.location.href = '<?php echo APP_URL; ?>/cart.php';
+    const quantity = parseInt(document.getElementById('quantity').value) || 1;
+
+    // Lấy / tạo guestId
+    let gid = localStorage.getItem('guest_id');
+    if (!gid && typeof getOrCreateGuestId === 'function') {
+        gid = getOrCreateGuestId();
+    }
+    if (!gid) {
+        const ts = Date.now();
+        gid = `guest_${ts}_${Math.random().toString(36).slice(2)}`;
+        localStorage.setItem('guest_id', gid);
+    }
+
+    // Lưu dữ liệu mua ngay tách biệt giỏ hàng
+    const buyNowCartKey = `buy_now_cart_${gid}`;
+    const buyNowProductsKey = `buy_now_products_${gid}`;
+
+    const cart = [{ id: productId, quantity }];
+    const products = {};
+    products[productId] = {
+        ...productPayload,
+        quantity
+    };
+
+    localStorage.setItem(buyNowCartKey, JSON.stringify(cart));
+    localStorage.setItem(buyNowProductsKey, JSON.stringify(products));
+
+    // Chuyển sang checkout với mode buy_now, không đụng tới giỏ hàng chính
+    window.location.href = '<?php echo APP_URL; ?>/checkout.php?buy_now=1';
 }
 
-function showTab(tabName) {
+function showTab(tabName, el) {
     // Hide all tabs
     document.querySelectorAll('.tab-content').forEach(tab => {
         tab.classList.add('hidden');
@@ -507,8 +554,298 @@ function showTab(tabName) {
     document.getElementById('tab-' + tabName).classList.remove('hidden');
     
     // Add active class to clicked button
-    event.target.classList.add('active', 'text-rose-500', 'border-b-2', 'border-rose-500');
+    const target = el || event.target;
+    target.classList.add('active', 'text-rose-500', 'border-b-2', 'border-rose-500');
 }
+
+// Image Lightbox với zoom bằng chuột
+let currentZoom = 1;
+let translateX = 0;
+let translateY = 0;
+
+function openImageZoom(imageUrl) {
+    currentZoom = 1;
+    translateX = 0;
+    translateY = 0;
+    const img = document.getElementById('zoom-image');
+    img.src = imageUrl;
+    img.style.transform = 'scale(1) translate(0, 0)';
+    document.getElementById('image-zoom-modal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeImageZoom() {
+    currentZoom = 1;
+    translateX = 0;
+    translateY = 0;
+    const img = document.getElementById('zoom-image');
+    img.style.transform = 'scale(1) translate(0, 0)';
+    document.getElementById('image-zoom-modal').classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+// Mouse wheel zoom
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('image-zoom-modal');
+    const img = document.getElementById('zoom-image');
+    const container = document.getElementById('zoom-image-container');
+    
+    // Close modal khi click vào background
+    modal.addEventListener('click', function(e) {
+        if (e.target === this || e.target === container) {
+            closeImageZoom();
+        }
+    });
+    
+    // Mouse wheel zoom
+    container.addEventListener('wheel', function(e) {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? -0.1 : 0.1;
+        const oldZoom = currentZoom;
+        currentZoom = Math.max(0.5, Math.min(3, currentZoom + delta));
+        
+        // Reset translate khi zoom về 1
+        if (currentZoom <= 1) {
+            translateX = 0;
+            translateY = 0;
+            container.style.cursor = 'default';
+            img.style.cursor = 'default';
+        } else {
+            container.style.cursor = 'grab';
+            img.style.cursor = 'grab';
+        }
+        
+        img.style.transform = `scale(${currentZoom}) translate(${translateX / currentZoom}px, ${translateY / currentZoom}px)`;
+    }, { passive: false });
+    
+    // Drag ảnh khi đã zoom (desktop)
+    let isDragging = false;
+    let startX, startY;
+    
+    container.addEventListener('mousedown', function(e) {
+        if (currentZoom > 1 && e.target === img) {
+            isDragging = true;
+            container.style.cursor = 'grabbing';
+            img.style.cursor = 'grabbing';
+            startX = e.clientX - translateX;
+            startY = e.clientY - translateY;
+        }
+    });
+    
+    document.addEventListener('mouseup', function() {
+        isDragging = false;
+        if (currentZoom > 1) {
+            container.style.cursor = 'grab';
+            img.style.cursor = 'grab';
+        }
+    });
+    
+    document.addEventListener('mousemove', function(e) {
+        if (!isDragging || currentZoom <= 1) return;
+        e.preventDefault();
+        translateX = e.clientX - startX;
+        translateY = e.clientY - startY;
+        img.style.transform = `scale(${currentZoom}) translate(${translateX / currentZoom}px, ${translateY / currentZoom}px)`;
+    });
+    
+    // ========== MOBILE TOUCH EVENTS ==========
+    let lastTap = 0;
+    let touchStartDistance = 0;
+    let touchStartZoom = 1;
+    let isPinching = false;
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let isTouchDragging = false;
+    let tapTimeout = null;
+    
+    // Helper function để cập nhật transform
+    function updateImageTransform() {
+        img.style.transform = `scale(${currentZoom}) translate(${translateX / currentZoom}px, ${translateY / currentZoom}px)`;
+    }
+    
+    // Pinch to zoom và drag
+    img.addEventListener('touchstart', function(e) {
+        if (e.touches.length === 2) {
+            isPinching = true;
+            e.preventDefault();
+            const touch1 = e.touches[0];
+            const touch2 = e.touches[1];
+            touchStartDistance = Math.hypot(
+                touch2.clientX - touch1.clientX,
+                touch2.clientY - touch1.clientY
+            );
+            touchStartZoom = currentZoom;
+            // Hủy tap timeout khi bắt đầu pinch
+            if (tapTimeout) {
+                clearTimeout(tapTimeout);
+                tapTimeout = null;
+            }
+        } else if (e.touches.length === 1 && currentZoom > 1) {
+            // Bắt đầu drag khi đã zoom
+            isTouchDragging = true;
+            const touch = e.touches[0];
+            touchStartX = touch.clientX - translateX;
+            touchStartY = touch.clientY - translateY;
+        }
+    }, { passive: false });
+    
+    img.addEventListener('touchmove', function(e) {
+        if (e.touches.length === 2 && isPinching) {
+            e.preventDefault();
+            const touch1 = e.touches[0];
+            const touch2 = e.touches[1];
+            const currentDistance = Math.hypot(
+                touch2.clientX - touch1.clientX,
+                touch2.clientY - touch1.clientY
+            );
+            
+            const scale = currentDistance / touchStartDistance;
+            currentZoom = Math.max(0.5, Math.min(3, touchStartZoom * scale));
+            
+            // Reset translate khi zoom về 1
+            if (currentZoom <= 1) {
+                translateX = 0;
+                translateY = 0;
+            }
+            
+            updateImageTransform();
+        } else if (e.touches.length === 1 && isTouchDragging && currentZoom > 1) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            translateX = touch.clientX - touchStartX;
+            translateY = touch.clientY - touchStartY;
+            updateImageTransform();
+        }
+    }, { passive: false });
+    
+    // Single tap và double tap
+    img.addEventListener('touchend', function(e) {
+        // Reset pinch và drag flags
+        if (e.touches.length < 2) {
+            isPinching = false;
+        }
+        if (e.touches.length === 0) {
+            isTouchDragging = false;
+        }
+        
+        // Chỉ xử lý tap khi không có pinch/drag
+        if (!isPinching && !isTouchDragging && e.changedTouches.length === 1) {
+            const currentTime = new Date().getTime();
+            const tapLength = currentTime - lastTap;
+            
+            if (tapLength < 300 && tapLength > 0) {
+                // Double tap - zoom in/out
+                e.preventDefault();
+                if (tapTimeout) {
+                    clearTimeout(tapTimeout);
+                }
+                if (currentZoom > 1) {
+                    // Đang zoom thì thu nhỏ về 1
+                    currentZoom = 1;
+                    translateX = 0;
+                    translateY = 0;
+                } else {
+                    // Chưa zoom thì zoom to
+                    currentZoom = 2;
+                }
+                updateImageTransform();
+                lastTap = 0; // Reset để tránh trigger lại
+            } else {
+                // Single tap - thu nhỏ nếu đang zoom
+                lastTap = currentTime;
+                if (currentZoom > 1) {
+                    e.preventDefault();
+                    tapTimeout = setTimeout(function() {
+                        currentZoom = 1;
+                        translateX = 0;
+                        translateY = 0;
+                        updateImageTransform();
+                    }, 200); // Delay để phân biệt với double tap
+                }
+            }
+        }
+    }, { passive: false });
+});
+
+// Keyboard navigation - ESC để đóng
+document.addEventListener('keydown', function(e) {
+    const modal = document.getElementById('image-zoom-modal');
+    if (modal && !modal.classList.contains('hidden') && e.key === 'Escape') {
+        closeImageZoom();
+    }
+});
+</script>
+
+<!-- Image Zoom Modal -->
+<div id="image-zoom-modal" class="hidden fixed inset-0 flex items-center justify-center" style="z-index: 9999; background: rgba(0, 0, 0, 0.1);">
+    <!-- Close Button -->
+    <button onclick="closeImageZoom()" class="absolute top-4 right-4 bg-white bg-opacity-80 hover:bg-opacity-100 text-gray-700 rounded-full w-10 h-10 flex items-center justify-center transition-all shadow-lg" style="z-index: 10000;">
+        <i class="fas fa-times text-lg"></i>
+    </button>
+    
+    <!-- Image Container -->
+    <div id="zoom-image-container" class="w-full h-full flex items-center justify-center overflow-hidden" style="cursor: grab;">
+        <img id="zoom-image" 
+             src="" 
+             alt="Product Image"
+             onclick="event.stopPropagation()"
+             class="object-contain transition-transform duration-200"
+             style="cursor: grab; max-width: 90vw; max-height: 90vh; transform-origin: center center; box-shadow: 0 0 900px 90px rgba(128, 128, 128, 0.9);">
+    </div>
+</div>
+
+<style>
+#image-zoom-modal {
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+#zoom-image {
+    animation: zoomIn 0.2s ease;
+}
+
+@keyframes zoomIn {
+    from { 
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to { 
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Overlay nền tối nhẹ - không dùng background-color */
+.image-modal-overlay {
+    position: absolute;
+    inset: 0;
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+}
+
+/* Tạo hiệu ứng tối nhẹ bằng pseudo-element */
+.image-modal-overlay::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0.15;
+    background: radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.3) 100%);
+}
+
+/* Hoặc dùng cách khác - overlay mỏng */
+.image-modal-overlay::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0.2;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.15));
+    pointer-events: none;
+}
+</style>
 </script>
 
 <?php include '../includes/footer.php'; ?>

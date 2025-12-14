@@ -230,6 +230,61 @@ function addToCart(productId, quantity = 1, productData = null) {
     }
 }
 
+/**
+ * Mua ngay: lưu vào bộ nhớ tạm riêng (buy_now) và chuyển checkout
+ * Không ảnh hưởng giỏ hàng chính.
+ */
+function buyNowSingle(productId, quantity = 1, productData = null, appUrl = '') {
+    try {
+        if (!guestId) {
+            getOrCreateGuestId();
+        }
+
+        productId = parseInt(productId);
+        quantity = parseInt(quantity) || 1;
+        if (isNaN(productId) || productId <= 0) {
+            console.error('Product ID không hợp lệ cho buy now:', productId);
+            showToast('Không thể mua ngay sản phẩm này.', 'error');
+            return;
+        }
+        if (quantity <= 0) quantity = 1;
+
+        const safeAppUrl = appUrl && appUrl.trim().length > 0 ? appUrl.trim() : '';
+        const cartKey = `buy_now_cart_${guestId}`;
+        const productsKey = `buy_now_products_${guestId}`;
+
+        const cartData = [{ id: productId, quantity }];
+
+        const normalizedProduct = {
+            id: productId,
+            name: productData?.name || '',
+            slug: productData?.slug || '',
+            image: productData?.image || '',
+            price: productData?.price ? parseFloat(productData.price) : 0,
+            sale_price: productData?.sale_price ? parseFloat(productData.sale_price) : null,
+            rating: productData?.rating !== undefined ? parseFloat(productData.rating) : null,
+            reviews: productData?.reviews !== undefined ? parseInt(productData.reviews) : null,
+            sold: productData?.sold !== undefined ? parseInt(productData.sold) : null,
+            quantity
+        };
+
+        localStorage.setItem(cartKey, JSON.stringify(cartData));
+        localStorage.setItem(productsKey, JSON.stringify({ [productId]: normalizedProduct }));
+
+        const checkoutUrl = `${safeAppUrl || ''}/checkout.php?buy_now=1`;
+        window.location.href = checkoutUrl;
+    } catch (e) {
+        console.error('Lỗi buy now:', e);
+        showToast('Không thể mua ngay, vui lòng thử lại.', 'error');
+    }
+}
+
+// Đảm bảo các hàm cần dùng inline được gắn vào window
+if (typeof window !== 'undefined') {
+    window.buyNowSingle = buyNowSingle;
+    window.addToCart = addToCart;
+}
+
 function removeFromCart(productId) {
     try {
     productId = parseInt(productId);

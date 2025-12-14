@@ -9,6 +9,36 @@ class ImageUploader {
     private static $maxSize = 5 * 1024 * 1024; // 5MB
     
     /**
+     * Lấy MIME type của file một cách an toàn
+     * @param string $filePath Đường dẫn file
+     * @return string|null MIME type hoặc null
+     */
+    private static function getMimeType($filePath) {
+        // Thử dùng finfo_open (Fileinfo extension) - ưu tiên nhất
+        if (function_exists('finfo_open')) {
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            if ($finfo) {
+                $mimeType = finfo_file($finfo, $filePath);
+                finfo_close($finfo);
+                if ($mimeType) {
+                    return $mimeType;
+                }
+            }
+        }
+        
+        // Fallback: dùng mime_content_type nếu có
+        if (function_exists('mime_content_type')) {
+            $mimeType = mime_content_type($filePath);
+            if ($mimeType) {
+                return $mimeType;
+            }
+        }
+        
+        // Fallback: dùng $_FILES['type'] nếu có
+        return null;
+    }
+    
+    /**
      * Upload file hình ảnh
      * @param array $file $_FILES['field_name']
      * @param string $folder Thư mục lưu trữ (sliders, products, categories)
@@ -31,13 +61,11 @@ class ImageUploader {
         }
         
         // Kiểm tra loại file
-        $mimeType = mime_content_type($file['tmp_name']);
+        $mimeType = self::getMimeType($file['tmp_name']);
         
-        // Fallback nếu mime_content_type không hoạt động
-        if (!$mimeType && function_exists('finfo_open')) {
-            $finfo = finfo_open(FILEINFO_MIME_TYPE);
-            $mimeType = finfo_file($finfo, $file['tmp_name']);
-            finfo_close($finfo);
+        // Nếu không lấy được mime type từ file, thử dùng $_FILES['type']
+        if (!$mimeType && isset($file['type']) && !empty($file['type'])) {
+            $mimeType = $file['type'];
         }
         
         // Kiểm tra extension nếu không có mime type
@@ -105,13 +133,11 @@ class ImageUploader {
         }
         
         // Kiểm tra loại file
-        $mimeType = mime_content_type($file['tmp_name']);
+        $mimeType = self::getMimeType($file['tmp_name']);
         
-        // Fallback nếu mime_content_type không hoạt động
-        if (!$mimeType && function_exists('finfo_open')) {
-            $finfo = finfo_open(FILEINFO_MIME_TYPE);
-            $mimeType = finfo_file($finfo, $file['tmp_name']);
-            finfo_close($finfo);
+        // Nếu không lấy được mime type từ file, thử dùng $_FILES['type']
+        if (!$mimeType && isset($file['type']) && !empty($file['type'])) {
+            $mimeType = $file['type'];
         }
         
         // Kiểm tra extension nếu không có mime type

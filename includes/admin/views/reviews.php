@@ -156,8 +156,11 @@ showToast('<?php echo addslashes($errorMessage); ?>', 'error');
 
 <!-- Reviews List -->
 <div class="card">
-    <div class="card-header">
+    <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="card-title mb-0">Danh sách Đánh giá</h5>
+        <button class="btn btn-primary" onclick="showCreateModal()">
+            <i class="fas fa-plus"></i> Thêm đánh giá
+        </button>
     </div>
     <div class="card-body">
         <div class="table-responsive">
@@ -246,6 +249,76 @@ showToast('<?php echo addslashes($errorMessage); ?>', 'error');
     </div>
 </div>
 
+<!-- Modal Create -->
+<div class="modal fade" id="createReviewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Thêm Đánh giá</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="<?php echo APP_URL; ?>/admin/actions/reviews.php?action=create">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Sản phẩm <span style="color:#dc3545;">*</span></label>
+                        <select name="product_id" class="form-control" required>
+                            <option value="">-- Chọn sản phẩm --</option>
+                            <?php foreach ($products as $product): ?>
+                                <option value="<?php echo $product['id']; ?>">
+                                    <?php echo htmlspecialchars($product['name']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Tên khách hàng <span style="color:#dc3545;">*</span></label>
+                        <input type="text" name="customer_name" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Đánh giá (sao) <span style="color:#dc3545;">*</span></label>
+                        <select name="rating" class="form-control" required>
+                            <?php for ($i = 1; $i <= 5; $i++): ?>
+                                <option value="<?php echo $i; ?>" <?php echo $i == 5 ? 'selected' : ''; ?>>
+                                    <?php echo $i; ?> sao
+                                </option>
+                            <?php endfor; ?>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Nội dung đánh giá</label>
+                        <textarea name="comment" class="form-control" rows="4"></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Trạng thái <span style="color:#dc3545;">*</span></label>
+                                <select name="status" class="form-control" required>
+                                    <option value="pending" selected>Chờ duyệt</option>
+                                    <option value="approved">Đã duyệt</option>
+                                    <option value="rejected">Từ chối</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Hiển thị nổi bật</label>
+                                <div class="form-check form-switch mt-2">
+                                    <input class="form-check-input" type="checkbox" name="main" value="1">
+                                    <label class="form-check-label">Đánh giá nổi bật (hiển thị trên trang chủ)</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-primary">Thêm</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <!-- Modal Edit -->
 <?php if ($review): ?>
 <div class="modal fade show" id="reviewModal" tabindex="-1" style="display: block;">
@@ -258,8 +331,15 @@ showToast('<?php echo addslashes($errorMessage); ?>', 'error');
             <form method="POST" action="<?php echo APP_URL; ?>/admin/actions/reviews.php?action=edit&id=<?php echo $review['id']; ?>">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Sản phẩm</label>
-                        <input type="text" class="form-control" value="<?php echo htmlspecialchars($review['product_name'] ?? '-'); ?>" disabled>
+                        <label class="form-label">Sản phẩm <span style="color:#dc3545;">*</span></label>
+                        <select name="product_id" class="form-control" required>
+                            <option value="">-- Chọn sản phẩm --</option>
+                            <?php foreach ($products as $product): ?>
+                                <option value="<?php echo $product['id']; ?>" <?php echo $review['product_id'] == $product['id'] ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($product['name']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Tên khách hàng <span style="color:#dc3545;">*</span></label>
@@ -314,6 +394,11 @@ showToast('<?php echo addslashes($errorMessage); ?>', 'error');
 
 <script>
 const reviewData = <?php echo json_encode($reviews); ?>;
+
+function showCreateModal() {
+    const modal = new bootstrap.Modal(document.getElementById('createReviewModal'));
+    modal.show();
+}
 
 function showModal(id) {
     window.location.href = '<?php echo APP_URL; ?>/admin/reviews.php?action=edit&id=' + id;

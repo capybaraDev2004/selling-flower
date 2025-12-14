@@ -242,10 +242,28 @@ function getGuestId() {
     return guestId;
 }
 
+function getCheckoutMode() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('buy_now') === '1' ? 'buy_now' : 'cart';
+}
+
+function getStorageKeys(mode, guestId) {
+    if (mode === 'buy_now') {
+        return {
+            cartKey: `buy_now_cart_${guestId}`,
+            productsKey: `buy_now_products_${guestId}`
+        };
+    }
+    return {
+        cartKey: `cart_${guestId}`,
+        productsKey: `products_${guestId}`
+    };
+}
+
 function getCartData() {
     const guestId = getGuestId();
-    const cartKey = `cart_${guestId}`;
-    const productsKey = `products_${guestId}`;
+    const mode = getCheckoutMode();
+    const { cartKey, productsKey } = getStorageKeys(mode, guestId);
     let cart = [];
     let products = {};
 
@@ -258,7 +276,7 @@ function getCartData() {
         console.error('Lỗi đọc giỏ hàng:', error);
     }
 
-    return { cart, products };
+    return { cart, products, mode, guestId, cartKey, productsKey };
 }
 
 function renderOrderItems() {
@@ -530,11 +548,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 renderSuccess(order);
 
                 // Xoá giỏ hàng local sau khi tạo đơn
-                const guestId = localStorage.getItem('guest_id') || getCookie('guest_id');
+                const { mode, guestId } = getCartData();
                 if (guestId) {
-                    localStorage.removeItem(`cart_${guestId}`);
-                    localStorage.removeItem(`products_${guestId}`);
-                    if (window.updateCartCount) {
+                    const { cartKey, productsKey } = getStorageKeys(mode, guestId);
+                    localStorage.removeItem(cartKey);
+                    localStorage.removeItem(productsKey);
+                    if (mode !== 'buy_now' && window.updateCartCount) {
                         window.updateCartCount();
                     }
                 }

@@ -35,7 +35,7 @@ class ProductModel {
             $types .= "ss";
         }
         
-        $sql .= " ORDER BY p.id ASC";
+        $sql .= " ORDER BY p.id DESC";
         
         if (!empty($params)) {
             $stmt = $this->db->prepare($sql);
@@ -196,7 +196,7 @@ class ProductModel {
     }
     
     public function getFeatured($limit = 8) {
-        $sql = "SELECT p.*, c.name as category_name FROM products p LEFT JOIN categories c ON p.category_id = c.id WHERE p.featured = 1 AND p.status = 'active' ORDER BY p.id ASC LIMIT ?";
+        $sql = "SELECT p.*, c.name as category_name FROM products p LEFT JOIN categories c ON p.category_id = c.id WHERE p.featured = 1 AND p.status = 'active' ORDER BY p.id DESC LIMIT ?";
         $stmt = $this->db->prepare($sql);
         $stmt->bind_param("i", $limit);
         $stmt->execute();
@@ -393,7 +393,7 @@ class ProductModel {
                     c.slug = ?
                     OR c.parent_id = (SELECT id FROM categories WHERE slug = ? LIMIT 1)
                   )
-            ORDER BY p.id ASC
+            ORDER BY p.id DESC
             LIMIT ?
         ";
         $stmt = $this->db->prepare($sql);

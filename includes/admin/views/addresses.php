@@ -219,6 +219,15 @@ showToast('<?php echo addslashes($errorMessage); ?>', 'error');
                             </select>
                         </div>
                         <div class="col-md-4 mb-3">
+                            <label class="form-label">Vùng miền</label>
+                            <select name="region" class="form-control" id="formRegion">
+                                <option value="">Chọn vùng</option>
+                                <option value="north">Miền Bắc</option>
+                                <option value="south">Miền Nam</option>
+                            </select>
+                            <small class="text-muted">Áp dụng cho văn phòng (miền Bắc/miền Nam)</small>
+                        </div>
+                        <div class="col-md-4 mb-3">
                             <label class="form-label">Thứ tự hiển thị <span style="color:#dc3545;">*</span></label>
                             <input type="number" name="display_order" class="form-control" id="formOrder" value="1" min="0" required>
                         </div>
@@ -260,6 +269,7 @@ function showModal(action, id = null) {
         form.reset();
         formId.value = '';
         document.getElementById('formType').value = 'office';
+        document.getElementById('formRegion').value = '';
         document.getElementById('formStatus').value = 'active';
         document.getElementById('formOrder').value = 1;
     } else if (action === 'edit' && id) {
@@ -279,6 +289,13 @@ function showModal(action, id = null) {
             document.getElementById('formEmail').value = address.email || '';
             document.getElementById('formMapUrl').value = address.map_url || '';
             document.getElementById('formType').value = address.type || 'office';
+            if (address.northOffice == 1) {
+                document.getElementById('formRegion').value = 'north';
+            } else if (address.southOffice == 1) {
+                document.getElementById('formRegion').value = 'south';
+            } else {
+                document.getElementById('formRegion').value = '';
+            }
             document.getElementById('formOrder').value = address.display_order || 1;
             document.getElementById('formStatus').value = address.status || 'active';
             document.getElementById('formNote').value = address.note || '';

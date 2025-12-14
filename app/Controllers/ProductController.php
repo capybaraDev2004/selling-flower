@@ -173,7 +173,8 @@ class ProductController {
                 $attributes = [];
                 foreach ($_POST['attributes'] as $attr) {
                     $attrName = trim($attr['attribute_name'] ?? '');
-                    $attrValue = trim($attr['attribute_value'] ?? '');
+                    // Giữ nguyên xuống dòng (\n) trong attribute_value, chỉ trim khoảng trắng ở đầu và cuối
+                    $attrValue = preg_replace('/^[\s]+|[\s]+$/u', '', $attr['attribute_value'] ?? '');
                     if (!empty($attrName) && !empty($attrValue)) {
                         $attributes[] = [
                             'attribute_name' => $attrName,
@@ -281,7 +282,8 @@ class ProductController {
                         $attributes = [];
                         foreach ($_POST['attributes'] as $attr) {
                             $attrName = trim($attr['attribute_name'] ?? '');
-                            $attrValue = trim($attr['attribute_value'] ?? '');
+                            // Giữ nguyên xuống dòng (\n) trong attribute_value, chỉ trim khoảng trắng ở đầu và cuối
+                            $attrValue = preg_replace('/^[\s]+|[\s]+$/u', '', $attr['attribute_value'] ?? '');
                             if (!empty($attrName) && !empty($attrValue)) {
                                 $attributes[] = [
                                     'attribute_name' => $attrName,
@@ -383,26 +385,45 @@ class ProductController {
             $primaryImageFile = $_FILES['primary_image_file'] ?? null;
             
             if ($primaryImageFile && isset($primaryImageFile['tmp_name']) && !empty($primaryImageFile['tmp_name'])) {
+                // Lấy tất cả ảnh chính cũ trước khi upload
+                $oldImages = $imageModel->getByProductId($id);
+                $oldPrimaryImages = [];
+                foreach ($oldImages as $img) {
+                    if ($img['is_primary'] == 1 || $img['is_primary'] == '1') {
+                        $oldPrimaryImages[] = $img;
+                    }
+                }
+                
                 // Upload ảnh chính với tên file = SKU.jpg (sẽ ghi đè ảnh cũ nếu có)
                 $uploadResult = ImageUploader::uploadWithCustomName($primaryImageFile, 'products', $sku, true);
                 
                 if ($uploadResult['success']) {
-                    // Xóa ảnh chính cũ khỏi database (file đã được ghi đè)
-                    $oldImages = $imageModel->getByProductId($id);
-                    foreach ($oldImages as $img) {
-                        if ($img['is_primary'] == 1) {
-                            // Chỉ xóa record trong database, không xóa file vì đã được ghi đè
-                            $imageModel->delete($img['id']);
+                    // Xóa tất cả ảnh chính cũ khỏi database
+                    foreach ($oldPrimaryImages as $oldImg) {
+                        // Xóa file ảnh cũ (nếu URL khác với ảnh mới)
+                        if ($oldImg['image_url'] !== $uploadResult['url']) {
+                            ImageUploader::delete($oldImg['image_url']);
                         }
+                        // Xóa record trong database
+                        $imageModel->delete($oldImg['id']);
                     }
                     
                     // Thêm ảnh chính mới vào database
-                    $imageModel->create([
+                    $imageCreateResult = $imageModel->create([
                         'product_id' => $id,
                         'image_url' => $uploadResult['url'],
                         'is_primary' => 1,
                         'display_order' => 0
                     ]);
+                    
+                    // Kiểm tra nếu không tạo được record trong database, xóa file đã upload
+                    if (!$imageCreateResult) {
+                        ImageUploader::delete($uploadResult['url']);
+                        return ['success' => false, 'message' => 'Lỗi khi lưu ảnh vào database. Vui lòng thử lại.'];
+                    }
+                } else {
+                    // Nếu upload thất bại, trả về lỗi
+                    return ['success' => false, 'message' => $uploadResult['message'] ?? 'Lỗi khi upload ảnh chính'];
                 }
             }
             
@@ -449,12 +470,17 @@ class ProductController {
                                 $uploadResult = ImageUploader::uploadWithCustomName($file, 'products', $customFileName, true);
                                 
                                 if ($uploadResult['success']) {
-                                    $imageModel->create([
+                                    $imageCreateResult = $imageModel->create([
                                         'product_id' => $id,
                                         'image_url' => $uploadResult['url'],
                                         'is_primary' => 0,
                                         'display_order' => $existingAdditionalCount + $i + 1
                                     ]);
+                                    
+                                    // Nếu không tạo được record, xóa file đã upload
+                                    if (!$imageCreateResult) {
+                                        ImageUploader::delete($uploadResult['url']);
+                                    }
                                 }
                             }
                         }
@@ -468,7 +494,8 @@ class ProductController {
                 $attributes = [];
                 foreach ($_POST['attributes'] as $attr) {
                     $attrName = trim($attr['attribute_name'] ?? '');
-                    $attrValue = trim($attr['attribute_value'] ?? '');
+                    // Giữ nguyên xuống dòng (\n) trong attribute_value, chỉ trim khoảng trắng ở đầu và cuối
+                    $attrValue = preg_replace('/^[\s]+|[\s]+$/u', '', $attr['attribute_value'] ?? '');
                     if (!empty($attrName) && !empty($attrValue)) {
                         $attributes[] = [
                             'attribute_name' => $attrName,
@@ -521,24 +548,44 @@ class ProductController {
                         $primaryImageFile = $_FILES['primary_image_file'] ?? null;
                         
                         if ($primaryImageFile && isset($primaryImageFile['tmp_name']) && !empty($primaryImageFile['tmp_name'])) {
+                            // Lấy tất cả ảnh chính cũ trước khi upload
+                            $oldImages = $imageModel->getByProductId($id);
+                            $oldPrimaryImages = [];
+                            foreach ($oldImages as $img) {
+                                if ($img['is_primary'] == 1 || $img['is_primary'] == '1') {
+                                    $oldPrimaryImages[] = $img;
+                                }
+                            }
+                            
                             // Upload ảnh chính với tên file = SKU.jpg
                             $uploadResult = ImageUploader::uploadWithCustomName($primaryImageFile, 'products', $sku, true);
                             
                             if ($uploadResult['success']) {
-                                $oldImages = $imageModel->getByProductId($id);
-                                foreach ($oldImages as $img) {
-                                    if ($img['is_primary'] == 1) {
-                                        // Chỉ xóa record trong database, file đã được ghi đè
-                                        $imageModel->delete($img['id']);
+                                // Xóa tất cả ảnh chính cũ khỏi database
+                                foreach ($oldPrimaryImages as $oldImg) {
+                                    // Xóa file ảnh cũ (nếu URL khác với ảnh mới)
+                                    if ($oldImg['image_url'] !== $uploadResult['url']) {
+                                        ImageUploader::delete($oldImg['image_url']);
                                     }
+                                    // Xóa record trong database
+                                    $imageModel->delete($oldImg['id']);
                                 }
                                 
-                                $imageModel->create([
+                                $imageCreateResult = $imageModel->create([
                                     'product_id' => $id,
                                     'image_url' => $uploadResult['url'],
                                     'is_primary' => 1,
                                     'display_order' => 0
                                 ]);
+                                
+                                // Kiểm tra nếu không tạo được record trong database, xóa file đã upload
+                                if (!$imageCreateResult) {
+                                    ImageUploader::delete($uploadResult['url']);
+                                    return ['success' => false, 'message' => 'Lỗi khi lưu ảnh vào database. Vui lòng thử lại.'];
+                                }
+                            } else {
+                                // Nếu upload thất bại, trả về lỗi
+                                return ['success' => false, 'message' => $uploadResult['message'] ?? 'Lỗi khi upload ảnh chính'];
                             }
                         }
                         
@@ -583,12 +630,17 @@ class ProductController {
                                             $uploadResult = ImageUploader::uploadWithCustomName($file, 'products', $customFileName, true);
                                             
                                             if ($uploadResult['success']) {
-                                                $imageModel->create([
+                                                $imageCreateResult = $imageModel->create([
                                                     'product_id' => $id,
                                                     'image_url' => $uploadResult['url'],
                                                     'is_primary' => 0,
                                                     'display_order' => $existingAdditionalCount + $i + 1
                                                 ]);
+                                                
+                                                // Nếu không tạo được record, xóa file đã upload
+                                                if (!$imageCreateResult) {
+                                                    ImageUploader::delete($uploadResult['url']);
+                                                }
                                             }
                                         }
                                     }
@@ -602,7 +654,8 @@ class ProductController {
                 $attributes = [];
                 foreach ($_POST['attributes'] as $attr) {
                     $attrName = trim($attr['attribute_name'] ?? '');
-                    $attrValue = trim($attr['attribute_value'] ?? '');
+                    // Giữ nguyên xuống dòng (\n) trong attribute_value, chỉ trim khoảng trắng ở đầu và cuối
+                    $attrValue = preg_replace('/^[\s]+|[\s]+$/u', '', $attr['attribute_value'] ?? '');
                     if (!empty($attrName) && !empty($attrValue)) {
                         $attributes[] = [
                             'attribute_name' => $attrName,
